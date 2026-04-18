@@ -119,11 +119,9 @@ def scrape_takashimaya() -> list[Event]:
 
 
 def scrape_isetan() -> list[Event]:
-    return _scrape_page(DEPACHIKA_URL, {"新宿伊勢丹"})
+    # depachika は個別ブランド単位で件数が多すぎるため bussan のみ使用
+    return _scrape_page(BUSSAN_URL, {"新宿伊勢丹"})
 
 
 def scrape_mitsukoshi() -> list[Event]:
-    # bussan.html (物産展) + depachika (デパ地下)
-    events = _scrape_page(BUSSAN_URL, {"日本橋三越"})
-    events += _scrape_page(DEPACHIKA_URL, {"日本橋三越"})
-    return events
+    return _scrape_page(BUSSAN_URL, {"日本橋三越"})
