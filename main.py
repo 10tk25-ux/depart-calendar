@@ -1,7 +1,8 @@
 import json
 import sys
 from pathlib import Path
-from scrapers import tobu, seibu, takashimaya, isetan, mitsukoshi
+from scrapers import tobu, seibu
+from scrapers import departevent
 from scrapers.filter import filter_events
 
 OUTPUT_PATH = Path(__file__).parent / "data" / "events.json"
@@ -13,9 +14,9 @@ def run():
     scrapers = [
         ("東武池袋", tobu.scrape),
         ("西武池袋", seibu.scrape),
-        ("新宿高島屋", takashimaya.scrape),
-        ("新宿伊勢丹", isetan.scrape),
-        ("日本橋三越", mitsukoshi.scrape),
+        ("新宿高島屋", departevent.scrape_takashimaya),
+        ("新宿伊勢丹", departevent.scrape_isetan),
+        ("日本橋三越", departevent.scrape_mitsukoshi),
     ]
 
     for name, fn in scrapers:
