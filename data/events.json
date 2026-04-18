@@ -20,26 +20,6 @@
     "category": ""
   },
   {
-    "id": "e4ec568094dd",
-    "store": "東武池袋",
-    "title": "食料品即日ご自宅配送便",
-    "start": "2024-06-01",
-    "end": "2024-08-01",
-    "floor": "B2F 9番地サービスカウンター",
-    "url": "https://www.tobu-dept.jp/ikebukuro/event/detail/6832",
-    "category": ""
-  },
-  {
-    "id": "a3320050eeac",
-    "store": "東武池袋",
-    "title": "東武友の会 会員様「レストラン街スパイス 5％OFF」",
-    "start": "2026-02-01",
-    "end": "2026-08-01",
-    "floor": "",
-    "url": "https://www.tobu-dept.jp/ikebukuro/event/detail/8581",
-    "category": ""
-  },
-  {
     "id": "36c5ff28a3de",
     "store": "東武池袋",
     "title": "食品フロア 期間限定ショップのご紹介",
@@ -57,6 +37,16 @@
     "end": "2026-05-07",
     "floor": "8F催事場",
     "url": "https://www.tobu-dept.jp/ikebukuro/event/detail/8712",
+    "category": ""
+  },
+  {
+    "id": "2ad84f9fd4e9",
+    "store": "東武池袋",
+    "title": "ウィッグ展示試着会",
+    "start": "2026-04-23",
+    "end": "2026-04-30",
+    "floor": "4F 3番地イベントスペース[ステージT-4]",
+    "url": "https://www.tobu-dept.jp/ikebukuro/event/detail/8742",
     "category": ""
   },
   {
