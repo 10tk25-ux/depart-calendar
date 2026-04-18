@@ -1,1 +1,62 @@
-[]
+[
+  {
+    "id": "3f06502b1301",
+    "store": "東武池袋",
+    "title": "B1F和洋菓子フロア おすすめ情報",
+    "start": "2026-04-14",
+    "end": "2026-06-14",
+    "floor": "B1F",
+    "url": "https://www.tobu-dept.jp/ikebukuro/event/detail/2700",
+    "category": ""
+  },
+  {
+    "id": "73e00908854e",
+    "store": "東武池袋",
+    "title": "レストラン街スパイス　グルメ予約サイト",
+    "start": "2022-11-22",
+    "end": "2023-01-22",
+    "floor": "レストラン街スパイス 11F～15F",
+    "url": "https://www.tobu-dept.jp/ikebukuro/event/detail/4443",
+    "category": ""
+  },
+  {
+    "id": "e4ec568094dd",
+    "store": "東武池袋",
+    "title": "食料品即日ご自宅配送便",
+    "start": "2024-06-01",
+    "end": "2024-08-01",
+    "floor": "B2F 9番地サービスカウンター",
+    "url": "https://www.tobu-dept.jp/ikebukuro/event/detail/6832",
+    "category": ""
+  },
+  {
+    "id": "a3320050eeac",
+    "store": "東武池袋",
+    "title": "東武友の会 会員様「レストラン街スパイス 5％OFF」",
+    "start": "2026-02-01",
+    "end": "2026-08-01",
+    "floor": "",
+    "url": "https://www.tobu-dept.jp/ikebukuro/event/detail/8581",
+    "category": ""
+  },
+  {
+    "id": "36c5ff28a3de",
+    "store": "東武池袋",
+    "title": "食品フロア 期間限定ショップのご紹介",
+    "start": "2026-03-26",
+    "end": "2026-05-07",
+    "floor": "B2F・B1F食品",
+    "url": "https://www.tobu-dept.jp/ikebukuro/event/detail/5095",
+    "category": ""
+  },
+  {
+    "id": "de393730b009",
+    "store": "東武池袋",
+    "title": "海明け 雪どけ ぐるめぐり 大北海道展＜1週目情報＞",
+    "start": "2026-04-22",
+    "end": "2026-05-07",
+    "floor": "8F催事場",
+    "url": "https://www.tobu-dept.jp/ikebukuro/event/detail/8712",
+    "category": ""
+  }
+]
