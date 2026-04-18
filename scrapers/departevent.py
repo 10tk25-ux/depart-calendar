@@ -121,7 +121,7 @@ def _scrape_page(url: str, target_stores: set[str]) -> list[Event]:
                     if len(cells) < 2:
                         continue
                     date_text = cells[0].get_text(strip=True)
-                    event_text = cells[1].get_text(strip=True).lstrip("◎").strip()
+                    event_text = cells[1].get_text(separator="\n", strip=True).lstrip("◎").strip()
                     if not event_text:
                         continue
 
