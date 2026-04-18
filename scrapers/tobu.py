@@ -1,77 +1,93 @@
-import re
 import time
 import requests
 from bs4 import BeautifulSoup
-from dateutil import parser as dateparser
+from datetime import datetime, timedelta, date
 from .base import Event
 
 BASE_URL = "https://www.tobu-dept.jp"
-EVENT_URL = f"{BASE_URL}/ikebukuro/event/"
 STORE = "東武池袋"
 HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+FAR_FUTURE = "99991231"
 
 
-def _parse_date_range(text: str) -> tuple[str, str]:
-    """'2026年4月22日（水）～5月6日（水）' → ('2026-04-22', '2026-05-07')"""
-    text = text.strip().replace("\u301c", "~").replace("～", "~")
-    parts = text.split("~")
+def _parse_yyyymmdd(s: str) -> date | None:
     try:
-        start_dt = dateparser.parse(parts[0].strip(), fuzzy=True, yearfirst=False)
-        if len(parts) > 1:
-            end_raw = parts[1].strip()
-            # 終了日は年が省略されている場合がある ("5月6日") → 開始年月を補完
-            if re.match(r"^\d{1,2}月", end_raw):
-                end_raw = f"{start_dt.year}年{end_raw}"
-            end_dt = dateparser.parse(end_raw, fuzzy=True, yearfirst=False)
-        else:
-            end_dt = start_dt
-        # FullCalendar の end は exclusive なので +1日
-        from datetime import timedelta
-        start_str = start_dt.strftime("%Y-%m-%d")
-        end_str = (end_dt + timedelta(days=1)).strftime("%Y-%m-%d")
-        return start_str, end_str
+        return datetime.strptime(s[:8], "%Y%m%d").date()
     except Exception:
-        return "", ""
+        return None
 
 
-def scrape() -> list[Event]:
-    events: list[Event] = []
+def _scrape_month_url(url: str) -> list[Event]:
+    events = []
     try:
-        resp = requests.get(EVENT_URL, headers=HEADERS, timeout=20)
-        resp.encoding = resp.apparent_encoding
+        resp = requests.get(url, headers=HEADERS, timeout=20)
+        resp.encoding = "utf-8"
         soup = BeautifulSoup(resp.text, "html.parser")
 
-        for item in soup.select(".eventList__item, .event-item, article.event"):
-            title_el = item.select_one("h3, h2, .event-title, .title")
+        for li in soup.select("#sec_cnts li[data-open]"):
+            data_open = li.get("data-open", "")
+            data_close = li.get("data-close", "")
+
+            start_d = _parse_yyyymmdd(data_open)
+            if not start_d:
+                continue
+
+            # 9999xxxx は期限なし（常設ページ）→ 60日間で表示
+            if data_close.startswith("9999"):
+                end_d = start_d + timedelta(days=60)
+            else:
+                end_d = _parse_yyyymmdd(data_close)
+                if not end_d:
+                    end_d = start_d
+
+            # FullCalendar の end は exclusive (+1日)
+            end_d = end_d + timedelta(days=1)
+
+            title_el = li.select_one("div.sttl h3")
             if not title_el:
                 continue
             title = title_el.get_text(strip=True)
 
-            period_el = item.select_one(".period, .date, .event-date, time")
-            period_text = period_el.get_text(strip=True) if period_el else ""
-
-            floor_el = item.select_one(".floor, .place, .location")
+            # フロア: sttl 内の txt01 span（h3 の前）
+            floor_el = li.select_one("div.sttl p.txt01 span")
             floor = floor_el.get_text(strip=True) if floor_el else ""
 
-            link_el = item.select_one("a[href]")
-            url = BASE_URL + link_el["href"] if link_el and link_el["href"].startswith("/") else (link_el["href"] if link_el else EVENT_URL)
-
-            start, end = _parse_date_range(period_text)
-            if not start:
-                continue
+            link_el = li.select_one("div.btn a")
+            url_path = link_el["href"] if link_el else ""
+            full_url = BASE_URL + url_path if url_path.startswith("/") else url_path or url
 
             events.append(Event(
                 store=STORE,
                 title=title,
-                start=start,
-                end=end,
-                url=url,
+                start=start_d.strftime("%Y-%m-%d"),
+                end=end_d.strftime("%Y-%m-%d"),
+                url=full_url,
                 floor=floor,
                 category="",
             ))
 
         time.sleep(2)
     except Exception as e:
-        print(f"[tobu] scrape error: {e}")
-
+        print(f"[tobu] error {url}: {e}")
     return events
+
+
+def scrape() -> list[Event]:
+    today = date.today()
+    urls = [f"{BASE_URL}/ikebukuro/event/"]
+    # 今月 + 翌2ヶ月分も取得
+    for delta in range(1, 3):
+        m = today.month + delta
+        y = today.year + (m - 1) // 12
+        m = ((m - 1) % 12) + 1
+        urls.append(f"{BASE_URL}/ikebukuro/event/1/{y}/{m}")
+
+    seen = set()
+    all_events = []
+    for u in urls:
+        for ev in _scrape_month_url(u):
+            if ev.id not in seen:
+                seen.add(ev.id)
+                all_events.append(ev)
+
+    return all_events

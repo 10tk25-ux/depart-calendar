@@ -1,97 +1,130 @@
 import re
-import time
-import requests
-from bs4 import BeautifulSoup
+from datetime import timedelta, date
 from dateutil import parser as dateparser
-from datetime import timedelta
+from playwright.sync_api import sync_playwright
 from .base import Event
 
-BASE_URL = "https://www.sogo-seibu.jp"
-TOPICS_URL = f"{BASE_URL}/ikebukuro/topics/"
+TOPICS_URL = "https://www.sogo-seibu.jp/ikebukuro/topics/"
 STORE = "西武池袋"
-HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+BASE_URL = "https://www.sogo-seibu.jp"
 
-FOOD_CATEGORY_KEYWORDS = ["グルメ", "スイーツ", "食", "フード", "デパ地下", "gourmet", "弁当"]
+# 西武はWix製サイトのためPlaywright必須
+DATE_RANGE_RE = re.compile(
+    r"(\d{4})[年/](\d{1,2})[月/](\d{1,2})日?[（(][^）)]*[）)]?\s*[～~〜]\s*"
+    r"(?:(\d{4})[年/])?(\d{1,2})[月/](\d{1,2})"
+)
+DATE_SINGLE_RE = re.compile(r"(\d{4})[年/](\d{1,2})[月/](\d{1,2})")
 
-
-def _parse_date_range(text: str) -> tuple[str, str]:
-    text = text.strip().replace("～", "~").replace("\u301c", "~")
-    parts = text.split("~")
-    try:
-        start_dt = dateparser.parse(parts[0].strip(), fuzzy=True)
-        if len(parts) > 1:
-            end_raw = parts[1].strip()
-            if re.match(r"^\d{1,2}[/月]", end_raw):
-                end_raw = f"{start_dt.year}年{end_raw}" if "月" in end_raw else f"{start_dt.year}/{end_raw}"
-            end_dt = dateparser.parse(end_raw, fuzzy=True)
-        else:
-            end_dt = start_dt
-        return start_dt.strftime("%Y-%m-%d"), (end_dt + timedelta(days=1)).strftime("%Y-%m-%d")
-    except Exception:
-        return "", ""
+FOOD_CATEGORIES = ["グルメ", "スイーツ", "食", "フード", "デパ地下", "gourmet", "弁当", "お弁当"]
 
 
-def _get_page(page: int) -> BeautifulSoup | None:
-    url = TOPICS_URL if page == 1 else f"{TOPICS_URL}?page={page}"
-    try:
-        resp = requests.get(url, headers=HEADERS, timeout=20)
-        resp.encoding = resp.apparent_encoding
-        time.sleep(2)
-        return BeautifulSoup(resp.text, "html.parser")
-    except Exception as e:
-        print(f"[seibu] page {page} error: {e}")
-        return None
+def _parse_range(text: str) -> tuple[str, str]:
+    text = text.strip()
+    m = DATE_RANGE_RE.search(text)
+    if m:
+        y1, mo1, d1 = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        y2 = int(m.group(4)) if m.group(4) else y1
+        mo2, d2 = int(m.group(5)), int(m.group(6))
+        start = date(y1, mo1, d1)
+        end = date(y2, mo2, d2) + timedelta(days=1)
+        return start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d")
+    m2 = DATE_SINGLE_RE.search(text)
+    if m2:
+        d = date(int(m2.group(1)), int(m2.group(2)), int(m2.group(3)))
+        return d.strftime("%Y-%m-%d"), (d + timedelta(days=1)).strftime("%Y-%m-%d")
+    return "", ""
 
 
 def scrape() -> list[Event]:
     events: list[Event] = []
-    page = 1
-    while page <= 5:  # 最大5ページまで
-        soup = _get_page(page)
-        if soup is None:
-            break
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            ctx = browser.new_context(
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0 Safari/537.36",
+                locale="ja-JP",
+            )
+            page = ctx.new_page()
+            page.goto(TOPICS_URL, wait_until="networkidle", timeout=40000)
+            page.wait_for_timeout(4000)
 
-        items = soup.select(".topics-list__item, .topicsList__item, article.topics")
-        if not items:
-            break
+            # Wixの汎用的なリストアイテムを探す
+            # data-testid や role="listitem" など Wix 特有の属性を試みる
+            items = page.query_selector_all("[data-testid='richTextElement'], [role='listitem'], .blog-post-item, article")
 
-        for item in items:
-            title_el = item.select_one("h3, h2, .topics-title, .title")
-            if not title_el:
-                continue
-            title = title_el.get_text(strip=True)
+            if not items:
+                # フォールバック: テキストから日付を含む塊を探す
+                all_text_blocks = page.query_selector_all("a[href*='/ikebukuro/topics/']")
+                for anchor in all_text_blocks:
+                    try:
+                        title = anchor.inner_text().strip()
+                        if not title or len(title) > 100:
+                            continue
+                        href = anchor.get_attribute("href") or ""
+                        url = href if href.startswith("http") else BASE_URL + href
 
-            # カテゴリタグ取得
-            category_els = item.select(".category, .tag, .label")
-            category = ", ".join(el.get_text(strip=True) for el in category_els)
+                        # 親要素からテキスト全体を取得して日付を探す
+                        parent = anchor.evaluate_handle("el => el.closest('li') || el.closest('article') || el.parentElement")
+                        if parent:
+                            parent_text = page.evaluate("el => el ? el.innerText : ''", parent)
+                            start, end = _parse_range(parent_text)
+                            if not start:
+                                continue
 
-            period_el = item.select_one(".period, .date, time")
-            period_text = period_el.get_text(strip=True) if period_el else ""
+                            # カテゴリ判定
+                            category = ""
+                            for kw in FOOD_CATEGORIES:
+                                if kw in parent_text:
+                                    category = kw
+                                    break
 
-            floor_el = item.select_one(".floor, .place")
-            floor = floor_el.get_text(strip=True) if floor_el else ""
+                            events.append(Event(
+                                store=STORE,
+                                title=title,
+                                start=start,
+                                end=end,
+                                url=url,
+                                floor="",
+                                category=category,
+                            ))
+                    except Exception:
+                        continue
+            else:
+                for item in items:
+                    try:
+                        title_el = item.query_selector("h2, h3, h4, [data-hook='post-title']")
+                        if not title_el:
+                            continue
+                        title = title_el.inner_text().strip()
 
-            link_el = item.select_one("a[href]")
-            url = BASE_URL + link_el["href"] if link_el and link_el["href"].startswith("/") else (link_el["href"] if link_el else TOPICS_URL)
+                        inner_text = item.inner_text()
+                        start, end = _parse_range(inner_text)
+                        if not start:
+                            continue
 
-            start, end = _parse_date_range(period_text)
-            if not start:
-                continue
+                        category_text = ""
+                        cat_els = item.query_selector_all("[data-hook='post-category'], .category")
+                        if cat_els:
+                            category_text = ", ".join(el.inner_text().strip() for el in cat_els)
 
-            events.append(Event(
-                store=STORE,
-                title=title,
-                start=start,
-                end=end,
-                url=url,
-                floor=floor,
-                category=category,
-            ))
+                        link_el = item.query_selector("a[href]")
+                        href = link_el.get_attribute("href") if link_el else ""
+                        url = href if href.startswith("http") else BASE_URL + (href or "")
 
-        # 次ページがなければ終了
-        next_btn = soup.select_one("a.next, .pagination .next, [rel='next']")
-        if not next_btn:
-            break
-        page += 1
+                        events.append(Event(
+                            store=STORE,
+                            title=title,
+                            start=start,
+                            end=end,
+                            url=url,
+                            floor="",
+                            category=category_text,
+                        ))
+                    except Exception:
+                        continue
+
+            browser.close()
+    except Exception as e:
+        print(f"[seibu] scrape error: {e}")
 
     return events
