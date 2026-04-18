@@ -260,6 +260,15 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
       info.jsEvent.preventDefault();
       showModal(info.event);
     },
+    eventDidMount(info) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const endDate = info.event.end ? new Date(info.event.end) : new Date(info.event.start);
+      if (endDate <= today) {
+        info.el.style.opacity = '0.32';
+        info.el.style.filter = 'grayscale(60%)';
+      }
+    },
     height: "auto",
     dayMaxEvents: 4,
     eventDisplay: "block",
