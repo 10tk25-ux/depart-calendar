@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>都内デパート 催事カレンダー（食品・物産展）</title>
+
+  <!-- FullCalendar -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.11/locales/ja.global.min.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+      background: #f5f5f5;
+      color: #333;
+    }
+
+    header {
+      background: #fff;
+      border-bottom: 2px solid #e0e0e0;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    header h1 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .filters {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .filter-label {
+      font-size: 0.8rem;
+      color: #666;
+    }
+    .store-filter {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      padding: 3px 8px;
+      border-radius: 20px;
+      border: 2px solid transparent;
+      user-select: none;
+      transition: opacity 0.15s;
+    }
+    .store-filter input { display: none; }
+    .store-filter.active { opacity: 1; }
+    .store-filter.inactive { opacity: 0.35; }
+
+    .dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    #updated {
+      margin-left: auto;
+      font-size: 0.72rem;
+      color: #999;
+    }
+
+    main {
+      padding: 16px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    #calendar {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      padding: 12px;
+    }
+
+    /* モーダル */
+    #modal-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    #modal-overlay.open { display: flex; }
+    #modal {
+      background: #fff;
+      border-radius: 10px;
+      padding: 24px;
+      max-width: 480px;
+      width: 90%;
+      box-shadow: 0 4px 20px rgba(0,0,0,.2);
+      position: relative;
+    }
+    #modal h2 { font-size: 1rem; margin-bottom: 12px; line-height: 1.5; }
+    #modal table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    #modal td { padding: 5px 0; vertical-align: top; }
+    #modal td:first-child { width: 80px; color: #666; font-size: 0.8rem; }
+    #modal a { color: #1a73e8; text-decoration: none; }
+    #modal a:hover { text-decoration: underline; }
+    #modal-close {
+      position: absolute; top: 12px; right: 14px;
+      background: none; border: none;
+      font-size: 1.4rem; cursor: pointer; color: #888;
+      line-height: 1;
+    }
+    #modal-close:hover { color: #333; }
+
+    @media (max-width: 600px) {
+      header { padding: 10px 12px; gap: 10px; }
+      main { padding: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>都内デパート 催事カレンダー</h1>
+  <div class="filters">
+    <span class="filter-label">店舗：</span>
+    <!-- js で生成 -->
+  </div>
+  <span id="updated"></span>
+</header>
+
+<main>
+  <div id="calendar"></div>
+</main>
+
+<!-- イベント詳細モーダル -->
+<div id="modal-overlay">
+  <div id="modal">
+    <button id="modal-close" aria-label="閉じる">&times;</button>
+    <h2 id="modal-title"></h2>
+    <table>
+      <tr><td>店舗</td><td id="modal-store"></td></tr>
+      <tr><td>会期</td><td id="modal-period"></td></tr>
+      <tr><td>フロア</td><td id="modal-floor"></td></tr>
+      <tr><td>詳細</td><td><a id="modal-link" href="#" target="_blank" rel="noopener">公式ページを開く →</a></td></tr>
+    </table>
+  </div>
+</div>
+
+<script>
+const STORE_COLORS = {
+  "東武池袋": "#1565C0",
+  "西武池袋": "#2E7D32",
+  "新宿高島屋": "#C62828",
+  "新宿伊勢丹": "#6A1B9A",
+  "日本橋三越": "#E65100",
+};
+
+const activeStores = new Set(Object.keys(STORE_COLORS));
+
+let allEvents = [];
+let calendarInstance = null;
+
+async function loadEvents() {
+  const res = await fetch("data/events.json?" + Date.now());
+  allEvents = await res.json();
+
+  // 更新日時を最新 scrape の start 日付から推定
+  const updatedEl = document.getElementById("updated");
+  updatedEl.textContent = "最終更新: " + new Date().toLocaleDateString("ja-JP");
+
+  return allEvents;
+}
+
+function toFCEvents(events) {
+  return events
+    .filter(e => activeStores.has(e.store))
+    .map(e => ({
+      id: e.id,
+      title: `[${e.store.replace(/池袋|新宿|日本橋/, "")}] ${e.title}`,
+      start: e.start,
+      end: e.end,
+      allDay: true,
+      color: STORE_COLORS[e.store] || "#607D8B",
+      extendedProps: e,
+    }));
+}
+
+function buildFilters() {
+  const container = document.querySelector(".filters");
+  Object.entries(STORE_COLORS).forEach(([store, color]) => {
+    const label = document.createElement("label");
+    label.className = "store-filter active";
+    label.innerHTML = `<input type="checkbox" checked /><span class="dot" style="background:${color}"></span>${store}`;
+    label.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      if (activeStores.has(store)) {
+        activeStores.delete(store);
+        label.className = "store-filter inactive";
+      } else {
+        activeStores.add(store);
+        label.className = "store-filter active";
+      }
+      calendarInstance.removeAllEvents();
+      calendarInstance.addEventSource(toFCEvents(allEvents));
+    });
+    container.appendChild(label);
+  });
+}
+
+function showModal(event) {
+  const p = event.extendedProps;
+  document.getElementById("modal-title").textContent = p.title;
+  document.getElementById("modal-store").textContent = p.store;
+
+  const startDate = new Date(p.start);
+  // end は exclusive なので -1日表示
+  const endDate = new Date(p.end);
+  endDate.setDate(endDate.getDate() - 1);
+  const fmt = d => d.toLocaleDateString("ja-JP", {year:"numeric",month:"long",day:"numeric"});
+  document.getElementById("modal-period").textContent =
+    p.start === p.end ? fmt(startDate) : `${fmt(startDate)} 〜 ${fmt(endDate)}`;
+
+  document.getElementById("modal-floor").textContent = p.floor || "—";
+  const link = document.getElementById("modal-link");
+  link.href = p.url || "#";
+
+  document.getElementById("modal-overlay").classList.add("open");
+}
+
+document.getElementById("modal-close").addEventListener("click", () => {
+  document.getElementById("modal-overlay").classList.remove("open");
+});
+document.getElementById("modal-overlay").addEventListener("click", (e) => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove("open");
+});
+
+(async () => {
+  buildFilters();
+  await loadEvents();
+
+  const calEl = document.getElementById("calendar");
+  calendarInstance = new FullCalendar.Calendar(calEl, {
+    locale: "ja",
+    initialView: "dayGridMonth",
+    headerToolbar: {
+      left: "prev,next today",
+      center: "title",
+      right: "dayGridMonth,listMonth",
+    },
+    buttonText: { today: "今日", month: "月", list: "リスト" },
+    events: toFCEvents(allEvents),
+    eventClick(info) {
+      info.jsEvent.preventDefault();
+      showModal(info.event);
+    },
+    height: "auto",
+    dayMaxEvents: 4,
+    eventDisplay: "block",
+  });
+  calendarInstance.render();
+})();
+</script>
+</body>
+</html>
