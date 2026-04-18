@@ -1,37 +1,39 @@
 import re
 from datetime import timedelta, date
-from dateutil import parser as dateparser
 from playwright.sync_api import sync_playwright
 from .base import Event
 
-TOPICS_URL = "https://www.sogo-seibu.jp/ikebukuro/topics/"
+# カテゴリ2=グルメ絞り込みURL
+TOPICS_URL = "https://www.sogo-seibu.jp/ikebukuro/topics/?cateid=2"
 STORE = "西武池袋"
 BASE_URL = "https://www.sogo-seibu.jp"
 
-# 西武はWix製サイトのためPlaywright必須
 DATE_RANGE_RE = re.compile(
-    r"(\d{4})[年/](\d{1,2})[月/](\d{1,2})日?[（(][^）)]*[）)]?\s*[～~〜]\s*"
+    r"(\d{4})[年/](\d{1,2})[月/](\d{1,2})日?[（(]?[^）)]*[）)]?\s*[～~〜-]\s*"
     r"(?:(\d{4})[年/])?(\d{1,2})[月/](\d{1,2})"
 )
 DATE_SINGLE_RE = re.compile(r"(\d{4})[年/](\d{1,2})[月/](\d{1,2})")
 
-FOOD_CATEGORIES = ["グルメ", "スイーツ", "食", "フード", "デパ地下", "gourmet", "弁当", "お弁当"]
-
 
 def _parse_range(text: str) -> tuple[str, str]:
-    text = text.strip()
     m = DATE_RANGE_RE.search(text)
     if m:
         y1, mo1, d1 = int(m.group(1)), int(m.group(2)), int(m.group(3))
         y2 = int(m.group(4)) if m.group(4) else y1
         mo2, d2 = int(m.group(5)), int(m.group(6))
-        start = date(y1, mo1, d1)
-        end = date(y2, mo2, d2) + timedelta(days=1)
-        return start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d")
+        try:
+            start = date(y1, mo1, d1)
+            end = date(y2, mo2, d2) + timedelta(days=1)
+            return start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d")
+        except ValueError:
+            pass
     m2 = DATE_SINGLE_RE.search(text)
     if m2:
-        d = date(int(m2.group(1)), int(m2.group(2)), int(m2.group(3)))
-        return d.strftime("%Y-%m-%d"), (d + timedelta(days=1)).strftime("%Y-%m-%d")
+        try:
+            d = date(int(m2.group(1)), int(m2.group(2)), int(m2.group(3)))
+            return d.strftime("%Y-%m-%d"), (d + timedelta(days=1)).strftime("%Y-%m-%d")
+        except ValueError:
+            pass
     return "", ""
 
 
@@ -39,92 +41,95 @@ def scrape() -> list[Event]:
     events: list[Event] = []
     try:
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
+            browser = p.chromium.launch(
+                headless=True,
+                args=["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
+            )
             ctx = browser.new_context(
                 user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0 Safari/537.36",
                 locale="ja-JP",
             )
             page = ctx.new_page()
-            page.goto(TOPICS_URL, wait_until="networkidle", timeout=40000)
-            page.wait_for_timeout(4000)
+            page.goto(TOPICS_URL, wait_until="domcontentloaded", timeout=45000)
+            # Wixはレンダリングに時間がかかるため待機
+            page.wait_for_timeout(6000)
 
-            # Wixの汎用的なリストアイテムを探す
-            # data-testid や role="listitem" など Wix 特有の属性を試みる
-            items = page.query_selector_all("[data-testid='richTextElement'], [role='listitem'], .blog-post-item, article")
+            html = page.content()
+            print(f"[seibu] page size: {len(html)} chars", flush=True)
 
-            if not items:
-                # フォールバック: テキストから日付を含む塊を探す
-                all_text_blocks = page.query_selector_all("a[href*='/ikebukuro/topics/']")
-                for anchor in all_text_blocks:
-                    try:
-                        title = anchor.inner_text().strip()
-                        if not title or len(title) > 100:
-                            continue
-                        href = anchor.get_attribute("href") or ""
-                        url = href if href.startswith("http") else BASE_URL + href
+            # Wixのブログ記事リンクをすべて取得
+            anchors = page.query_selector_all("a[href*='/ikebukuro/topics/page/'], a[href*='/ikebukuro/topics/?']")
+            print(f"[seibu] anchor candidates: {len(anchors)}", flush=True)
 
-                        # 親要素からテキスト全体を取得して日付を探す
-                        parent = anchor.evaluate_handle("el => el.closest('li') || el.closest('article') || el.parentElement")
-                        if parent:
-                            parent_text = page.evaluate("el => el ? el.innerText : ''", parent)
-                            start, end = _parse_range(parent_text)
-                            if not start:
-                                continue
-
-                            # カテゴリ判定
-                            category = ""
-                            for kw in FOOD_CATEGORIES:
-                                if kw in parent_text:
-                                    category = kw
-                                    break
-
-                            events.append(Event(
-                                store=STORE,
-                                title=title,
-                                start=start,
-                                end=end,
-                                url=url,
-                                floor="",
-                                category=category,
-                            ))
-                    except Exception:
+            seen_hrefs = set()
+            for anchor in anchors:
+                try:
+                    href = anchor.get_attribute("href") or ""
+                    if href in seen_hrefs:
                         continue
-            else:
-                for item in items:
-                    try:
-                        title_el = item.query_selector("h2, h3, h4, [data-hook='post-title']")
-                        if not title_el:
-                            continue
-                        title = title_el.inner_text().strip()
+                    seen_hrefs.add(href)
 
-                        inner_text = item.inner_text()
-                        start, end = _parse_range(inner_text)
+                    full_url = href if href.startswith("http") else BASE_URL + href
+
+                    # アンカーの内側テキストからタイトルを取得
+                    title = anchor.inner_text().strip()
+                    if not title or len(title) > 120:
+                        continue
+
+                    # 親要素からテキスト全体を取得して日付を探す
+                    parent_text = page.evaluate(
+                        """el => {
+                            let p = el.closest('li') || el.closest('article') || el.closest('[role="listitem"]') || el.parentElement;
+                            return p ? p.innerText : '';
+                        }""",
+                        anchor,
+                    )
+
+                    start, end = _parse_range(parent_text or title)
+                    if not start:
+                        continue
+
+                    events.append(Event(
+                        store=STORE,
+                        title=title,
+                        start=start,
+                        end=end,
+                        url=full_url,
+                        floor="",
+                        category="グルメ",
+                    ))
+                except Exception:
+                    continue
+
+            # アンカーで取れない場合は全テキストから日付ブロックを抽出
+            if not events:
+                print("[seibu] fallback: extracting from page text", flush=True)
+                blocks = page.query_selector_all(
+                    "[data-testid='post-list-item'], [data-hook='post-list-item'], "
+                    ".post-list-item, article, li.blog-post"
+                )
+                for block in blocks:
+                    try:
+                        text = block.inner_text()
+                        start, end = _parse_range(text)
                         if not start:
                             continue
-
-                        category_text = ""
-                        cat_els = item.query_selector_all("[data-hook='post-category'], .category")
-                        if cat_els:
-                            category_text = ", ".join(el.inner_text().strip() for el in cat_els)
-
-                        link_el = item.query_selector("a[href]")
+                        # タイトルっぽい最初の行
+                        lines = [l.strip() for l in text.splitlines() if l.strip()]
+                        title = lines[0] if lines else text[:50]
+                        link_el = block.query_selector("a[href]")
                         href = link_el.get_attribute("href") if link_el else ""
-                        url = href if href.startswith("http") else BASE_URL + (href or "")
-
+                        url = href if href.startswith("http") else BASE_URL + href if href else TOPICS_URL
                         events.append(Event(
-                            store=STORE,
-                            title=title,
-                            start=start,
-                            end=end,
-                            url=url,
-                            floor="",
-                            category=category_text,
+                            store=STORE, title=title, start=start, end=end,
+                            url=url, floor="", category="グルメ",
                         ))
                     except Exception:
                         continue
 
             browser.close()
     except Exception as e:
-        print(f"[seibu] scrape error: {e}")
+        print(f"[seibu] scrape error: {e}", flush=True)
 
+    print(f"[seibu] raw events: {len(events)}", flush=True)
     return events
