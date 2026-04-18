@@ -85,6 +85,12 @@
       padding: 12px;
     }
 
+    /* 過去部分のイベント帯 */
+    .fc-event.event-past {
+      opacity: 0.30 !important;
+      filter: grayscale(65%) !important;
+    }
+
     /* モーダル */
     #modal-overlay {
       display: none;
@@ -179,17 +185,36 @@ async function loadEvents() {
 }
 
 function toFCEvents(events) {
-  return events
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayStr = today.toISOString().split('T')[0];
+
+  const result = [];
+  events
     .filter(e => activeStores.has(e.store))
-    .map(e => ({
-      id: e.id,
-      title: `[${e.store.replace(/池袋|新宿|日本橋/, "")}] ${e.title}`,
-      start: e.start,
-      end: e.end,
-      allDay: true,
-      color: STORE_COLORS[e.store] || "#607D8B",
-      extendedProps: e,
-    }));
+    .forEach(e => {
+      const color = STORE_COLORS[e.store] || "#607D8B";
+      const label = `[${e.store.replace(/池袋|新宿|日本橋/, "")}] ${e.title}`;
+      const base = { title: label, allDay: true, color, extendedProps: e };
+
+      const startDate = new Date(e.start);
+      const endDate   = new Date(e.end);
+
+      if (endDate <= today) {
+        // 全期間が過去
+        result.push({ ...base, id: e.id, start: e.start, end: e.end,
+                      classNames: ['event-past'] });
+      } else if (startDate < today) {
+        // 開催中：過去部分（グレー）と残り部分（通常色）に分割
+        result.push({ ...base, id: e.id + '-p', start: e.start, end: todayStr,
+                      classNames: ['event-past'] });
+        result.push({ ...base, id: e.id + '-f', start: todayStr, end: e.end });
+      } else {
+        // 全期間が未来
+        result.push({ ...base, id: e.id, start: e.start, end: e.end });
+      }
+    });
+  return result;
 }
 
 function buildFilters() {
@@ -258,16 +283,8 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
     events: toFCEvents(allEvents),
     eventClick(info) {
       info.jsEvent.preventDefault();
+      // past- / future- プレフィックスを除いた元データを取得
       showModal(info.event);
-    },
-    eventDidMount(info) {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const endDate = info.event.end ? new Date(info.event.end) : new Date(info.event.start);
-      if (endDate <= today) {
-        info.el.style.opacity = '0.32';
-        info.el.style.filter = 'grayscale(60%)';
-      }
     },
     height: "auto",
     dayMaxEvents: 4,

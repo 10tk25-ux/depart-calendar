@@ -34,6 +34,42 @@ DATE_RANGE_RE = re.compile(
     r"(\d{1,2})/(\d{1,2})\s*[〜～~]\s*(?:(\d{1,2})/)?(\d{1,2})"
 )
 
+# 催事名として優先するキーワード（これを含む節を優先採用）
+_TITLE_PREFER = [
+    "展", "フェア", "コレクション", "マルシェ", "祭", "市",
+    "スイーツ", "グルメ", "物産", "食", "菓子", "特集",
+    "セレクション", "フード", "デパ地下",
+]
+# 前置きとして読み飛ばすパターン（記念・周年など）
+_TITLE_SKIP_RE = re.compile(r"^.{0,25}(周年|記念|オープン|リニューアル|創業).{0,25}$")
+
+
+def _best_title(raw: str) -> str:
+    """催事テキストから最も説明的なタイトル節を選んで返す"""
+    # 「」『』 内のテキストを最優先候補に
+    bracketed = re.findall(r"[「『](.*?)[」』]", raw)
+    candidates = [b.strip() for b in bracketed if b.strip()]
+
+    # 全角スペース・改行で分割した候補を追加
+    parts = [
+        p.strip().lstrip("◎※●▶・").strip()
+        for p in re.split(r"[\n　]+", raw)
+        if p.strip()
+    ]
+    candidates += parts
+
+    # 食品・催事キーワードを含む候補を優先
+    for c in candidates:
+        if len(c) >= 5 and any(kw in c for kw in _TITLE_PREFER):
+            return c[:80]
+
+    # 記念・周年だけの節はスキップして次を採用
+    for c in candidates:
+        if not _TITLE_SKIP_RE.match(c) and len(c) >= 4:
+            return c[:80]
+
+    return (candidates[0] if candidates else raw)[:80]
+
 
 def _parse_date(text: str, base_year: int) -> tuple[str, str]:
     """'4/16〜29' や '4/22〜5/6' や '3/26〜4/7' を (start, end+1) に変換"""
@@ -93,9 +129,7 @@ def _scrape_page(url: str, target_stores: set[str]) -> list[Event]:
                     if not start:
                         continue
 
-                    # イベント名が長い場合は最初のアイテム名だけ使う
-                    # （伊勢丹のフードコレクションは複数出店者が入っている）
-                    title = event_text.split("\n")[0].split("　")[0][:80]
+                    title = _best_title(event_text)
 
                     events.append(Event(
                         store=current_store,
