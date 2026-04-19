@@ -1,7 +1,7 @@
 import json
 import sys
 from pathlib import Path
-from scrapers import tobu, seibu
+from scrapers import tobu, seibu, keio
 from scrapers import departevent
 from scrapers.filter import filter_events
 
@@ -14,6 +14,7 @@ def run():
     scrapers = [
         ("東武池袋", tobu.scrape),
         ("西武池袋", seibu.scrape),
+        ("京王新宿", keio.scrape),
         ("新宿高島屋", departevent.scrape_takashimaya),
         ("新宿伊勢丹", departevent.scrape_isetan),
         ("日本橋三越", departevent.scrape_mitsukoshi),
