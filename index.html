@@ -85,8 +85,8 @@
     }
 
     /* 曜日別の日付数字の色 */
-    .fc-day-sat .fc-daygrid-day-number { color: #0288d1; }
-    .fc-day-sun .fc-daygrid-day-number { color: #d32f2f; }
+    .fc-day-sat .fc-daygrid-day-number { color: #0288d1 !important; }
+    .fc-day-sun .fc-daygrid-day-number { color: #d32f2f !important; }
 
     /* 過去部分のイベント帯 */
     .fc-event.event-past {
@@ -304,14 +304,14 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
     },
     buttonText: { today: "今日", month: "月", list: "リスト" },
     titleFormat: { year: "numeric", month: "long" },
-    dayHeaderFormat: { weekday: "short" },
+    dayHeaderContent: (info) => ['日','月','火','水','木','金','土'][info.date.getUTCDay()],
     events: toFCEvents(allEvents),
     dayCellDidMount(info) {
       const d = info.date;
       const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
       if (JP_HOLIDAYS.has(dateStr)) {
         const numEl = info.el.querySelector('.fc-daygrid-day-number');
-        if (numEl) numEl.style.color = '#d32f2f';
+        if (numEl) numEl.style.setProperty('color', '#d32f2f', 'important');
       }
     },
     eventClick(info) {
