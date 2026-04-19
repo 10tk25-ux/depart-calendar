@@ -305,6 +305,7 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
       right: "dayGridMonth,listMonth",
     },
     buttonText: { today: "今日", month: "月", list: "リスト" },
+    titleFormat: (info) => `${info.date.marker.getUTCFullYear()}年${info.date.marker.getUTCMonth() + 1}月`,
     dayHeaderContent: (info) => ['日','月','火','水','木','金','土'][info.date.getUTCDay()],
     events: toFCEvents(allEvents),
     dayCellDidMount(info) {
