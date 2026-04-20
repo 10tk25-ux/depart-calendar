@@ -307,17 +307,14 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
     buttonText: { today: "今日", month: "月", list: "リスト" },
     titleFormat: (info) => `${info.date.marker.getUTCFullYear()}年${info.date.marker.getUTCMonth() + 1}月`,
     dayHeaderContent: (info) => ['日','月','火','水','木','金','土'][info.date.getUTCDay()],
+    dayCellContent: (info) => ({ html: `<a class="fc-daygrid-day-number">${info.date.getUTCDate()}</a>` }),
     events: toFCEvents(allEvents),
     dayCellDidMount(info) {
       const d = info.date;
-      const numEl = info.el.querySelector('.fc-daygrid-day-number');
-      if (numEl) {
-        // 「日」を除いて数字のみ表示
-        numEl.textContent = d.getUTCDate();
-      }
       // 祝日は赤色
       const dateStr = `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
       if (JP_HOLIDAYS.has(dateStr)) {
+        const numEl = info.el.querySelector('.fc-daygrid-day-number');
         if (numEl) numEl.style.setProperty('color', '#d32f2f', 'important');
       }
     },
