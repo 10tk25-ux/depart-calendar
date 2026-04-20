@@ -93,24 +93,43 @@
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      width: 44px;
-      height: 80px;
-      background: rgba(255,255,255,0.85);
-      border: 1px solid #ddd;
+      width: 40px;
+      height: 88px;
+      background: rgba(255,255,255,0.92);
+      border: 1px solid #bbb;
       border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.15);
+      box-shadow: 0 3px 12px rgba(0,0,0,.2);
       cursor: pointer;
-      font-size: 1.4rem;
-      color: #555;
+      font-size: 2rem;
+      font-weight: 300;
+      color: #333;
       align-items: center;
       justify-content: center;
       opacity: 0;
-      transition: opacity 0.2s;
+      transition: opacity 0.2s, transform 0.2s;
       z-index: 10;
     }
-    .cal-nav-prev { left: -52px; }
-    .cal-nav-next { right: -52px; }
+    .cal-nav-prev {
+      left: -44px;
+      transform: translateY(-50%) translateX(0);
+    }
+    .cal-nav-next {
+      right: -44px;
+      transform: translateY(-50%) translateX(0);
+    }
     #calendar-wrap:hover .cal-nav { opacity: 1; }
+    .cal-nav-prev:hover {
+      opacity: 1;
+      transform: translateY(-50%) translateX(8px);
+      background: #fff;
+      box-shadow: 0 4px 16px rgba(0,0,0,.25);
+    }
+    .cal-nav-next:hover {
+      opacity: 1;
+      transform: translateY(-50%) translateX(-8px);
+      background: #fff;
+      box-shadow: 0 4px 16px rgba(0,0,0,.25);
+    }
     @media (min-width: 601px) {
       .cal-nav { display: flex; }
     }
