@@ -77,11 +77,42 @@
       margin: 0 auto;
     }
 
+    #calendar-wrap {
+      position: relative;
+    }
     #calendar {
       background: #fff;
       border-radius: 8px;
       box-shadow: 0 1px 4px rgba(0,0,0,.08);
       padding: 12px;
+    }
+
+    /* 左右ホバー矢印（PC専用） */
+    .cal-nav {
+      display: none;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 80px;
+      background: rgba(255,255,255,0.85);
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.15);
+      cursor: pointer;
+      font-size: 1.4rem;
+      color: #555;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 10;
+    }
+    .cal-nav-prev { left: -52px; }
+    .cal-nav-next { right: -52px; }
+    #calendar-wrap:hover .cal-nav { opacity: 1; }
+    @media (min-width: 601px) {
+      .cal-nav { display: flex; }
     }
 
     /* 曜日別の日付数字の色 */
@@ -151,7 +182,11 @@
 </header>
 
 <main>
-  <div id="calendar"></div>
+  <div id="calendar-wrap">
+    <button class="cal-nav cal-nav-prev" id="cal-prev" aria-label="前の月">&#8249;</button>
+    <div id="calendar"></div>
+    <button class="cal-nav cal-nav-next" id="cal-next" aria-label="次の月">&#8250;</button>
+  </div>
 </main>
 
 <!-- イベント詳細モーダル -->
@@ -299,7 +334,7 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
     firstDay: 1,
     initialView: "dayGridMonth",
     headerToolbar: {
-      left: "prev,next today",
+      left: "today",
       center: "title",
       right: "",
     },
@@ -326,6 +361,10 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
     eventDisplay: "block",
   });
   calendarInstance.render();
+
+  // サイド矢印ボタン（PC）
+  document.getElementById("cal-prev").addEventListener("click", () => calendarInstance.prev());
+  document.getElementById("cal-next").addEventListener("click", () => calendarInstance.next());
 
   // スワイプで月移動（スマホ対応）
   let touchStartX = 0;
