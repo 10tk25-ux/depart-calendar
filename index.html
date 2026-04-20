@@ -135,6 +135,7 @@
     @media (max-width: 600px) {
       header { padding: 10px 12px; gap: 10px; }
       main { padding: 8px; }
+      .fc-prev-button, .fc-next-button { display: none !important; }
     }
   </style>
 </head>
@@ -300,9 +301,9 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
     headerToolbar: {
       left: "prev,next today",
       center: "title",
-      right: "dayGridMonth,listMonth",
+      right: "",
     },
-    buttonText: { today: "今日", month: "月", list: "リスト" },
+    buttonText: { today: "今日" },
     titleFormat: (info) => `${info.date.marker.getUTCFullYear()}年${info.date.marker.getUTCMonth() + 1}月`,
     dayHeaderContent: (info) => ['日','月','火','水','木','金','土'][info.date.getUTCDay()],
     events: toFCEvents(allEvents),
