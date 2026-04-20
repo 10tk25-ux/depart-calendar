@@ -333,7 +333,6 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
   calendarInstance.render();
 
   // スワイプで月移動（スマホ対応）
-  const calEl = document.getElementById("calendar");
   let touchStartX = 0;
   calEl.addEventListener("touchstart", (e) => {
     touchStartX = e.touches[0].clientX;
