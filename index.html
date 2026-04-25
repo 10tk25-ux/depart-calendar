@@ -357,14 +357,17 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
   const calEl = document.getElementById("calendar");
   calendarInstance = new FullCalendar.Calendar(calEl, {
     firstDay: 1,
-    initialView: isMobile() ? "listMonth" : "dayGridMonth",
-    headerToolbar: isMobile()
-      ? { left: "prev today next", center: "title", right: "" }
-      : { left: "today", center: "title", right: "" },
-    buttonText: { today: "今日", listMonth: "リスト" },
+    initialView: isMobile() ? "listYear" : "dayGridMonth",
+    headerToolbar: { left: "today", center: "title", right: "" },
+    buttonText: { today: "今日" },
     listDayFormat: { month: "numeric", day: "numeric", weekday: "short" },
     listDaySideFormat: false,
-    noEventsText: "この月の催事はありません",
+    noEventsText: "今後の催事情報はありません",
+    views: {
+      listYear: {
+        titleFormat: (info) => `${info.date.marker.getUTCFullYear()}年`,
+      },
+    },
     titleFormat: (info) => `${info.date.marker.getUTCFullYear()}年${info.date.marker.getUTCMonth() + 1}月`,
     dayHeaderContent: (info) => ['日','月','火','水','木','金','土'][info.date.getUTCDay()],
     events: toFCEvents(allEvents),
@@ -399,22 +402,19 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
     if (nowMobile === lastMobile) return;
     lastMobile = nowMobile;
     if (nowMobile) {
-      calendarInstance.changeView("listMonth");
-      calendarInstance.setOption("headerToolbar",
-        { left: "prev today next", center: "title", right: "" });
+      calendarInstance.changeView("listYear");
     } else {
       calendarInstance.changeView("dayGridMonth");
-      calendarInstance.setOption("headerToolbar",
-        { left: "today", center: "title", right: "" });
     }
   });
 
-  // スワイプで月移動（スマホ対応）
+  // スワイプで月移動（PCグリッド表示時のみ）
   let touchStartX = 0;
   calEl.addEventListener("touchstart", (e) => {
     touchStartX = e.touches[0].clientX;
   }, { passive: true });
   calEl.addEventListener("touchend", (e) => {
+    if (isMobile()) return; // リスト表示中はスワイプ不要
     const diff = touchStartX - e.changedTouches[0].clientX;
     if (Math.abs(diff) > 50) {
       diff > 0 ? calendarInstance.next() : calendarInstance.prev();
