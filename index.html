@@ -149,6 +149,21 @@
       background: #ff8c00 !important;
     }
 
+    /* スマホ縦スクロール: 月ラベル（各月1日のセル上部に表示） */
+    .fc-month-start-label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #555;
+      line-height: 1.3;
+      padding: 2px 0 0 2px;
+    }
+    /* 月ラベル付きセルは行全体の高さをそろえるため min-height を指定 */
+    .fc-day.fc-day-mon-start .fc-daygrid-day-top,
+    .fc-day[data-date$="-01"] .fc-daygrid-day-top {
+      min-height: 2.2em;
+    }
+
     /* モーダル */
     #modal-overlay {
       display: none;
@@ -384,7 +399,14 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
     },
     titleFormat: (info) => `${info.date.marker.getUTCFullYear()}年${info.date.marker.getUTCMonth() + 1}月`,
     dayHeaderContent: (info) => ['日','月','火','水','木','金','土'][info.date.getUTCDay()],
-    dayCellContent: (info) => ({ html: String(info.date.getDate()) }),
+    dayCellContent: (info) => {
+      const d = info.date;
+      if (isMobile() && d.getDate() === 1) {
+        const month = d.getMonth() + 1;
+        return { html: `<span class="fc-month-start-label">${month}月</span><span>${month}/1</span>` };
+      }
+      return { html: String(d.getDate()) };
+    },
     events: toFCEvents(allEvents),
     dayCellDidMount(info) {
       const d = info.date;
