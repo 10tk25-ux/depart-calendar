@@ -149,17 +149,15 @@
       background: #ff8c00 !important;
     }
 
-    /* スマホ縦スクロール: 月ラベルをセル左上に絶対配置 */
+    /* スマホ縦スクロール: 月ラベル（fc-daygrid-day-top の flex 左端に配置） */
     .fc-month-start-label {
-      position: absolute;
-      top: 2px;
-      left: 2px;
       font-size: 0.62rem;
       font-weight: 700;
       color: #ff69b4;
       line-height: 1;
+      align-self: center;
+      margin-left: 2px;
       pointer-events: none;
-      z-index: 2;
     }
 
     /* モーダル */
@@ -401,12 +399,17 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
     events: toFCEvents(allEvents),
     dayCellDidMount(info) {
       const d = info.date;
-      // 月ラベル：スマホ縦スクロール時、1日セルの左上に絶対配置
+      // 月ラベル：スマホ縦スクロール時、1日セルの左側に配置
+      // .fc-daygrid-day-top は flex-direction:row-reverse のため
+      // appendChild すると DOM 末尾 = 視覚的に左端になる
       if (isMobile() && d.getDate() === 1) {
-        const label = document.createElement('span');
-        label.className = 'fc-month-start-label';
-        label.textContent = `${d.getMonth() + 1}月`;
-        info.el.appendChild(label);
+        const top = info.el.querySelector('.fc-daygrid-day-top');
+        if (top) {
+          const label = document.createElement('span');
+          label.className = 'fc-month-start-label';
+          label.textContent = `${d.getMonth() + 1}月`;
+          top.appendChild(label);
+        }
       }
       // 祝日は赤色
       const dateStr = `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
