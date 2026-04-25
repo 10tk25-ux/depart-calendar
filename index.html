@@ -149,6 +149,19 @@
       background: #ff8c00 !important;
     }
 
+    /* 月境界線：各月1日セルの左辺を太線で示す（イベント帯の下に描画） */
+    .fc-day[data-date$="-01"]::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 3px;
+      background: #000;
+      z-index: 0;       /* イベント帯(z-index:1)の下 */
+      pointer-events: none;
+    }
+
     /* スマホ縦スクロール: 月ラベル（fc-daygrid-day-top の flex 左端に配置） */
     .fc-month-start-label {
       font-size: 0.62rem;
