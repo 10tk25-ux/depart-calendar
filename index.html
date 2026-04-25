@@ -149,19 +149,18 @@
       background: #ff8c00 !important;
     }
 
-    /* スマホ縦スクロール: 月ラベル（各月1日のセル上部に表示） */
+    /* スマホ縦スクロール: 月ラベル（1日セルに1行でインライン表示） */
     .fc-month-start-label {
-      display: block;
-      font-size: 0.78rem;
+      display: inline;
+      font-size: 0.68rem;
       font-weight: 700;
-      color: #555;
-      line-height: 1.3;
-      padding: 2px 0 0 2px;
+      color: #ff69b4;
+      margin-right: 2px;
     }
-    /* 月ラベル付きセルは行全体の高さをそろえるため min-height を指定 */
-    .fc-day.fc-day-mon-start .fc-daygrid-day-top,
+    /* 1日セルのdaytopを1行に固定 */
     .fc-day[data-date$="-01"] .fc-daygrid-day-top {
-      min-height: 2.2em;
+      white-space: nowrap;
+      overflow: hidden;
     }
 
     /* モーダル */
@@ -403,7 +402,7 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
       const d = info.date;
       if (isMobile() && d.getDate() === 1) {
         const month = d.getMonth() + 1;
-        return { html: `<span class="fc-month-start-label">${month}月</span><span>${month}/1</span>` };
+        return { html: `<span class="fc-month-start-label">${month}月</span>1` };
       }
       return { html: String(d.getDate()) };
     },
