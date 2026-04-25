@@ -373,17 +373,18 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
         click: scrollToToday,
       },
     },
+    locale: "ja",
     buttonText: { today: "今日" },
     views: {
       dayGridScrollable: {
         type: "dayGrid",
         duration: { months: 12 },
-        // 月ヘッダー用タイトルは不要（各月の区切りでわかる）
         titleFormat: () => "",
       },
     },
     titleFormat: (info) => `${info.date.marker.getUTCFullYear()}年${info.date.marker.getUTCMonth() + 1}月`,
     dayHeaderContent: (info) => ['日','月','火','水','木','金','土'][info.date.getUTCDay()],
+    dayCellContent: (info) => ({ html: String(info.date.getDate()) }),
     events: toFCEvents(allEvents),
     dayCellDidMount(info) {
       const d = info.date;
