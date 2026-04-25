@@ -365,10 +365,22 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
 
   const isMobile = () => window.innerWidth <= 600;
 
-  // 「今日」セルまでページスクロール
+  // 今週月曜日の行を画面最上部に表示（初期表示・リサイズ時）
+  function scrollToThisWeek() {
+    const today = new Date();
+    const daysFromMon = (today.getDay() + 6) % 7; // 月曜起点での経過日数
+    const mon = new Date(today);
+    mon.setDate(today.getDate() - daysFromMon);
+    const dateStr = `${mon.getFullYear()}-${String(mon.getMonth()+1).padStart(2,'0')}-${String(mon.getDate()).padStart(2,'0')}`;
+    const weekEl = calEl.querySelector(`[data-date="${dateStr}"]`);
+    const target = weekEl || calEl.querySelector('.fc-day-today');
+    if (target) target.scrollIntoView({ behavior: 'instant', block: 'start' });
+  }
+
+  // 「今日」ボタン：今日のセルを画面上部へ
   function scrollToToday() {
     const todayEl = calEl.querySelector('.fc-day-today');
-    if (todayEl) todayEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (todayEl) todayEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   const calEl = document.getElementById("calendar");
@@ -428,9 +440,9 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
   });
   calendarInstance.render();
 
-  // モバイル初期表示時は今日の位置までスクロール
+  // モバイル初期表示時は今週の行を先頭に
   if (isMobile()) {
-    setTimeout(scrollToToday, 100);
+    setTimeout(scrollToThisWeek, 200);
   }
 
   // サイド矢印ボタン（PC）
@@ -447,7 +459,7 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
       calendarInstance.changeView("dayGridScrollable");
       calendarInstance.setOption("headerToolbar",
         { left: "todayScroll", center: "title", right: "" });
-      setTimeout(scrollToToday, 100);
+      setTimeout(scrollToThisWeek, 200);
     } else {
       calendarInstance.changeView("dayGridMonth");
       calendarInstance.setOption("headerToolbar",
