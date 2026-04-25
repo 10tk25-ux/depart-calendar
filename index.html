@@ -186,6 +186,10 @@
       header { padding: 10px 12px; gap: 10px; }
       main { padding: 8px; }
       .fc-prev-button, .fc-next-button { display: none !important; }
+      /* リスト表示スタイル調整 */
+      .fc-list-event-title { font-size: 0.82rem; }
+      .fc-list-day-text, .fc-list-day-side-text { font-size: 0.85rem; }
+      .fc-list-event td { padding: 6px 8px; }
     }
   </style>
 </head>
@@ -348,16 +352,19 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
   buildFilters();
   await loadEvents();
 
+  const isMobile = () => window.innerWidth <= 600;
+
   const calEl = document.getElementById("calendar");
   calendarInstance = new FullCalendar.Calendar(calEl, {
     firstDay: 1,
-    initialView: "dayGridMonth",
-    headerToolbar: {
-      left: "today",
-      center: "title",
-      right: "",
-    },
-    buttonText: { today: "今日" },
+    initialView: isMobile() ? "listMonth" : "dayGridMonth",
+    headerToolbar: isMobile()
+      ? { left: "prev today next", center: "title", right: "" }
+      : { left: "today", center: "title", right: "" },
+    buttonText: { today: "今日", listMonth: "リスト" },
+    listDayFormat: { month: "numeric", day: "numeric", weekday: "short" },
+    listDaySideFormat: false,
+    noEventsText: "この月の催事はありません",
     titleFormat: (info) => `${info.date.marker.getUTCFullYear()}年${info.date.marker.getUTCMonth() + 1}月`,
     dayHeaderContent: (info) => ['日','月','火','水','木','金','土'][info.date.getUTCDay()],
     events: toFCEvents(allEvents),
@@ -384,6 +391,23 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
   // サイド矢印ボタン（PC）
   document.getElementById("cal-prev").addEventListener("click", () => calendarInstance.prev());
   document.getElementById("cal-next").addEventListener("click", () => calendarInstance.next());
+
+  // 画面幅変化でビューを切り替え（PC⇔スマホ回転など）
+  let lastMobile = isMobile();
+  window.addEventListener("resize", () => {
+    const nowMobile = isMobile();
+    if (nowMobile === lastMobile) return;
+    lastMobile = nowMobile;
+    if (nowMobile) {
+      calendarInstance.changeView("listMonth");
+      calendarInstance.setOption("headerToolbar",
+        { left: "prev today next", center: "title", right: "" });
+    } else {
+      calendarInstance.changeView("dayGridMonth");
+      calendarInstance.setOption("headerToolbar",
+        { left: "today", center: "title", right: "" });
+    }
+  });
 
   // スワイプで月移動（スマホ対応）
   let touchStartX = 0;
