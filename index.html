@@ -354,18 +354,32 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
 
   const isMobile = () => window.innerWidth <= 600;
 
+  // 「今日」セルまでページスクロール
+  function scrollToToday() {
+    const todayEl = calEl.querySelector('.fc-day-today');
+    if (todayEl) todayEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
   const calEl = document.getElementById("calendar");
   calendarInstance = new FullCalendar.Calendar(calEl, {
     firstDay: 1,
-    initialView: isMobile() ? "listYear" : "dayGridMonth",
-    headerToolbar: { left: "today", center: "title", right: "" },
+    initialView: isMobile() ? "dayGridScrollable" : "dayGridMonth",
+    headerToolbar: isMobile()
+      ? { left: "todayScroll", center: "title", right: "" }
+      : { left: "today", center: "title", right: "" },
+    customButtons: {
+      todayScroll: {
+        text: "今日",
+        click: scrollToToday,
+      },
+    },
     buttonText: { today: "今日" },
-    listDayFormat: { month: "numeric", day: "numeric", weekday: "short" },
-    listDaySideFormat: false,
-    noEventsText: "今後の催事情報はありません",
     views: {
-      listYear: {
-        titleFormat: (info) => `${info.date.marker.getUTCFullYear()}年`,
+      dayGridScrollable: {
+        type: "dayGrid",
+        duration: { months: 12 },
+        // 月ヘッダー用タイトルは不要（各月の区切りでわかる）
+        titleFormat: () => "",
       },
     },
     titleFormat: (info) => `${info.date.marker.getUTCFullYear()}年${info.date.marker.getUTCMonth() + 1}月`,
@@ -382,14 +396,18 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
     },
     eventClick(info) {
       info.jsEvent.preventDefault();
-      // past- / future- プレフィックスを除いた元データを取得
       showModal(info.event);
     },
     height: "auto",
-    dayMaxEvents: 4,
+    dayMaxEvents: 3,
     eventDisplay: "block",
   });
   calendarInstance.render();
+
+  // モバイル初期表示時は今日の位置までスクロール
+  if (isMobile()) {
+    setTimeout(scrollToToday, 100);
+  }
 
   // サイド矢印ボタン（PC）
   document.getElementById("cal-prev").addEventListener("click", () => calendarInstance.prev());
@@ -402,9 +420,14 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
     if (nowMobile === lastMobile) return;
     lastMobile = nowMobile;
     if (nowMobile) {
-      calendarInstance.changeView("listYear");
+      calendarInstance.changeView("dayGridScrollable");
+      calendarInstance.setOption("headerToolbar",
+        { left: "todayScroll", center: "title", right: "" });
+      setTimeout(scrollToToday, 100);
     } else {
       calendarInstance.changeView("dayGridMonth");
+      calendarInstance.setOption("headerToolbar",
+        { left: "today", center: "title", right: "" });
     }
   });
 
@@ -414,7 +437,7 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
     touchStartX = e.touches[0].clientX;
   }, { passive: true });
   calEl.addEventListener("touchend", (e) => {
-    if (isMobile()) return; // リスト表示中はスワイプ不要
+    if (isMobile()) return;
     const diff = touchStartX - e.changedTouches[0].clientX;
     if (Math.abs(diff) > 50) {
       diff > 0 ? calendarInstance.next() : calendarInstance.prev();
