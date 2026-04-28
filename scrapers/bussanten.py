@@ -26,30 +26,36 @@ STORE_MAP = {
 }
 TARGET_STORES = set(STORE_MAP.values())
 
-# "2026年4月23日（木）～4月29日" や "2026年4月30日～5月6日" に対応
-DATE_RE = re.compile(
-    r"(\d{4})年(\d{1,2})月(\d{1,2})日[^\d〜～]*[〜～]+\s*(?:(\d{1,2})月)?(\d{1,2})日"
+# 年なし日付も含めて複数の日程を取得（Part1・Part2 対応）
+# 例: "2026年4月23日～4月27日" "4月30日～5月6日"
+DATE_RE_ALL = re.compile(
+    r"(?:(\d{4})年)?(\d{1,2})月(\d{1,2})日[^\d〜～\n]{0,10}[〜～]+\s*(?:(\d{1,2})月)?(\d{1,2})日"
 )
 
 
-def _parse_date(text: str) -> tuple[str, str]:
-    m = DATE_RE.search(text)
-    if not m:
-        return "", ""
-    try:
-        year = int(m.group(1))
-        sm   = int(m.group(2))
-        sd   = int(m.group(3))
-        em   = int(m.group(4)) if m.group(4) else sm
-        ed   = int(m.group(5))
-        start = date(year, sm, sd)
-        end   = date(year, em, ed) + timedelta(days=1)  # FC は exclusive end
-        return start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d")
-    except ValueError:
-        return "", ""
+def _parse_all_dates(text: str) -> list[tuple[str, str]]:
+    """テキスト中のすべての日程範囲を返す（年なしは直前の年を引き継ぐ）"""
+    results = []
+    current_year = date.today().year
+    for m in DATE_RE_ALL.finditer(text):
+        try:
+            if m.group(1):
+                current_year = int(m.group(1))
+            sm = int(m.group(2))
+            sd = int(m.group(3))
+            em = int(m.group(4)) if m.group(4) else sm
+            ed = int(m.group(5))
+            # 終了月が開始月より小さければ翌年とみなす
+            end_year = current_year + 1 if em < sm else current_year
+            start = date(current_year, sm, sd)
+            end   = date(end_year,    em, ed) + timedelta(days=1)
+            results.append((start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d")))
+        except ValueError:
+            pass
+    return results
 
 
-def _scrape_article(url: str) -> Event | None:
+def _scrape_article(url: str) -> list[Event]:
     """記事ページ1件をパースして Event を返す（対象外店舗は None）"""
     try:
         resp = requests.get(url, headers=HEADERS, timeout=15)
@@ -61,15 +67,13 @@ def _scrape_article(url: str) -> Event | None:
         raw_title = h1.get_text(strip=True) if h1 else ""
         title = re.split(r"[|｜]", raw_title)[0].strip()
         if not title:
-            return None
+            return []
 
-        # ---- 店舗名：イベント詳細テーブル付近のみ検索（サイドバー等の誤マッチを避ける） ----
-        # article / main / entry-content など主要コンテンツ要素に絞る
+        # ---- 店舗名：主要コンテンツ先頭 1500 字に絞る ----
         main_el = (soup.find("article") or soup.find("main") or
                    soup.find(class_=re.compile(r"entry|content|post")) or soup.body)
         main_text = main_el.get_text(separator="\n", strip=True) if main_el else ""
 
-        # 詳細テーブルの範囲（先頭 1500 字以内）に絞って店舗を探す
         search_area = main_text[:1500]
         store = None
         for key, mapped in STORE_MAP.items():
@@ -77,35 +81,31 @@ def _scrape_article(url: str) -> Event | None:
                 store = mapped
                 break
         if not store:
-            return None
+            return []
 
-        # ---- 開催期間 ----
-        start, end = _parse_date(main_text)
-        if not start:
-            return None
+        # ---- 開催期間（複数日程対応: Part1・Part2 等）----
+        date_ranges = _parse_all_dates(main_text)
+        if not date_ranges:
+            return []
 
-        # ---- フロア：短い行で「○階」または「○F」と「催/場」を含むものだけ ----
+        # ---- フロア ----
         floor = ""
         for line in main_text.split("\n"):
             line = line.strip()
-            if len(line) > 40:          # 長い説明文は除外
+            if len(line) > 40:
                 continue
             if re.search(r"[1-9][0-9]?[階F]", line) and re.search(r"催|会場|場", line):
                 floor = line
                 break
 
-        return Event(
-            store=store,
-            title=title,
-            start=start,
-            end=end,
-            floor=floor,
-            url=url,
-            category="",   # フードフィルターをタイトルで判定させるため空にする
-        )
-    except Exception as e:
-        print(f"[bussanten] article error {url}: {e}", flush=True)
-        return None
+        return [
+            Event(store=store, title=title, start=s, end=e,
+                  floor=floor, url=url, category="")
+            for s, e in date_ranges
+        ]
+    except Exception as ex:
+        print(f"[bussanten] article error {url}: {ex}", flush=True)
+        return []
 
 
 # 投稿スラッグ形式のパス（/word-word-2026/ など）のみ対象
@@ -135,9 +135,7 @@ def scrape() -> list[Event]:
 
         for url in links:
             time.sleep(1)
-            ev = _scrape_article(url)
-            if ev:
-                events.append(ev)
+            events.extend(_scrape_article(url))
 
     except Exception as e:
         print(f"[bussanten] top page error: {e}", flush=True)

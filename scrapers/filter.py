@@ -1,3 +1,5 @@
+import re
+from collections import defaultdict
 from datetime import date, timedelta
 from .base import Event
 
@@ -86,6 +88,15 @@ def _is_recent(event: Event) -> bool:
         return True
 
 
+def _normalize_title(title: str) -> str:
+    """タイトルから週次・前後半などの suffix を除去して正規化する"""
+    # ＜...＞ 【...】 <...> [...] （...） (...) を除去
+    t = re.sub(r'[＜<【\[(（][^＞>】\])）]{0,30}[＞>】\])）]', '', title)
+    # 末尾の空白・記号を除去
+    t = re.sub(r'[\s　・｜|]+$', '', t).strip()
+    return t[:20]
+
+
 def filter_events(events: list[Event]) -> list[Event]:
     passed = [
         e for e in events
@@ -100,4 +111,30 @@ def filter_events(events: list[Event]) -> list[Event]:
         if key not in seen:
             seen.add(key)
             unique.append(e)
-    return unique
+
+    # 同一店舗・正規化タイトルが一致するイベントはひとつに統合する
+    # （例: 北海道展＜1週目情報＞ + ＜2週目情報＞、イタリア展 Part1 + Part2）
+    groups: dict[tuple, list[Event]] = defaultdict(list)
+    for e in unique:
+        key = (e.store, _normalize_title(e.title))
+        groups[key].append(e)
+
+    merged = []
+    for (store, norm), group in groups.items():
+        if len(group) == 1:
+            merged.append(group[0])
+        else:
+            group_sorted = sorted(group, key=lambda e: e.start)
+            base = group_sorted[0]
+            min_start = min(e.start for e in group)
+            max_end   = max(e.end   for e in group)
+            clean_title = re.sub(
+                r'[＜<【\[(（][^＞>】\])）]{0,30}[＞>】\])）]', '', base.title
+            ).strip()
+            merged.append(Event(
+                store=base.store, title=clean_title,
+                start=min_start,  end=max_end,
+                floor=base.floor, url=base.url, category=base.category,
+            ))
+
+    return merged
