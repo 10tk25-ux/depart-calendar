@@ -1,7 +1,7 @@
 import json
 import sys
 from pathlib import Path
-from scrapers import tobu, seibu, keio
+from scrapers import tobu, seibu, keio, bussanten
 from scrapers import departevent
 from scrapers.filter import filter_events
 
@@ -12,11 +12,13 @@ def run():
     all_events = []
 
     scrapers = [
-        ("東武池袋", tobu.scrape),
-        ("西武池袋", seibu.scrape),
-        ("京王新宿", keio.scrape),
+        ("東武池袋",  tobu.scrape),
+        ("西武池袋",  seibu.scrape),
+        ("京王新宿",  keio.scrape),
+        # bussanten.info: 伊勢丹新宿・日本橋三越・新宿高島屋の催事場イベントを取得
+        ("bussanten", bussanten.scrape),
+        # departevent.net: bussan.html で物産展系を補完
         ("新宿高島屋", departevent.scrape_takashimaya),
-        ("新宿伊勢丹", departevent.scrape_isetan),
         ("日本橋三越", departevent.scrape_mitsukoshi),
     ]
 

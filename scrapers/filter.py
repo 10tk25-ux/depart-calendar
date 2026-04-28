@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 from .base import Event
 
 INCLUDE_KEYWORDS = [
@@ -27,11 +27,12 @@ EXCLUDE_KEYWORDS = [
     "書道", "工芸", "絵画", "彫刻", "写真展", "映画",
     "音楽", "クラシック", "文具", "雑貨", "家具",
     "ウィッグ", "かつら", "ヘアウィッグ",
+    "真珠", "パール", "宝石", "ジュエル",
     # スポーツ・フィットネス系
     "ウォーキング", "ランニング", "スポーツ", "フィットネス", "ヨガ", "トレーニング",
     "アシックス", "ナイキ", "アディダス", "スニーカー", "シューズ", "スポーツウェア",
     # ファッション・アパレル系
-    "アパレル", "ブランドバッグ", "バーゲン", "アウトレット", "婦人服", "紳士服",
+    "アパレル", "ブランドバッグ", "バーゲン", "アウトレット", "婦人服", "紳士服", "婦人靴", "紳士靴",
     # 非食品マルシェ・クラフト系
     "クリエイター", "ハンドメイド", "クラフト", "手作り市", "フリーマーケット",
     # 催事ではないプロモーション・キャンペーン系
@@ -50,7 +51,7 @@ MIN_EVENT_DAYS = 3
 
 
 def is_food_event(event: Event) -> bool:
-    text = f"{event.title} {event.category}"
+    text = f"{event.title} {event.category} {event.floor}"
 
     for kw in EXCLUDE_KEYWORDS:
         if kw in text:
@@ -75,8 +76,26 @@ def _duration_days(event: Event) -> int:
         return 999
 
 
+def _is_recent(event: Event) -> bool:
+    """終了日が7日以上前のイベントは除外（古いスクレイプデータ混入防止）"""
+    try:
+        return date.fromisoformat(event.end) >= date.today() - timedelta(days=7)
+    except Exception:
+        return True
+
+
 def filter_events(events: list[Event]) -> list[Event]:
-    return [
+    passed = [
         e for e in events
-        if is_food_event(e) and _duration_days(e) >= MIN_EVENT_DAYS
+        if is_food_event(e) and _duration_days(e) >= MIN_EVENT_DAYS and _is_recent(e)
     ]
+
+    # 同一店舗・タイトル先頭20字・開始日が同じものは重複とみなす
+    seen: set[tuple] = set()
+    unique = []
+    for e in passed:
+        key = (e.store, e.title[:20], e.start)
+        if key not in seen:
+            seen.add(key)
+            unique.append(e)
+    return unique
