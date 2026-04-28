@@ -88,6 +88,17 @@ def _is_recent(event: Event) -> bool:
         return True
 
 
+def _extract_core_title(title: str) -> str:
+    """冗長な前置き句を除去して催事名本体を返す。
+    例: 「海明け 雪どけ ぐるめぐり 大北海道展」→「大北海道展」
+        「雅に薫る 京の逸品 京都展」→「京都展」
+    マッチしない場合はそのまま返す。"""
+    matches = re.findall(r'\S+(?:展|博|フェア|マルシェ)', title)
+    if matches:
+        return max(matches, key=len)
+    return title
+
+
 def _normalize_title(title: str) -> str:
     """タイトルから週次・前後半などの suffix を除去して正規化する"""
     # ＜...＞ 【...】 <...> [...] （...） (...) を除去
@@ -137,4 +148,12 @@ def filter_events(events: list[Event]) -> list[Event]:
                 floor=base.floor, url=base.url, category=base.category,
             ))
 
-    return merged
+    # 全イベントのタイトルから冗長な前置き句を除去
+    result = []
+    for e in merged:
+        core = _extract_core_title(e.title)
+        if core != e.title:
+            e = Event(store=e.store, title=core, start=e.start, end=e.end,
+                      floor=e.floor, url=e.url, category=e.category)
+        result.append(e)
+    return result

@@ -69,6 +69,11 @@ def _scrape_article(url: str) -> list[Event]:
         if not title:
             return []
 
+        # 店舗名・年を除去（長いキーを優先してマッチ）
+        for key in sorted(STORE_MAP.keys(), key=len, reverse=True):
+            title = title.replace(key, "")
+        title = re.sub(r"\s*\d{4}\s*", " ", title).strip()
+
         # ---- 店舗名：主要コンテンツ先頭 1500 字に絞る ----
         main_el = (soup.find("article") or soup.find("main") or
                    soup.find(class_=re.compile(r"entry|content|post")) or soup.body)
