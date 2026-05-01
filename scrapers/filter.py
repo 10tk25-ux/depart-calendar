@@ -13,7 +13,7 @@ INCLUDE_KEYWORDS = [
     "麺", "そば", "うどん", "餅", "大福", "せんべい",
     "味噌", "醤油", "だし", "鍋", "焼肉",
     "農産", "畜産", "水産", "食材", "調味料",
-    "展", "フェア", "マルシェ", "市場",
+    "展", "フェア", "市場",
     # 国・地域フェア（食品系催事として扱う）
     "イタリア", "フランス", "スペイン", "ドイツ", "イギリス", "ポルトガル",
     "ベルギー", "スイス", "オーストリア", "ギリシャ", "北欧",
@@ -37,6 +37,10 @@ EXCLUDE_KEYWORDS = [
     "アパレル", "ブランドバッグ", "バーゲン", "アウトレット", "婦人服", "紳士服", "婦人靴", "紳士靴",
     # 非食品マルシェ・クラフト系
     "クリエイター", "ハンドメイド", "クラフト", "手作り市", "フリーマーケット",
+    # キャラクター・アニメ・ゲーム系
+    "キャラクター", "パンダ", "アニメ", "ゲーム", "フィギュア", "ぬいぐるみ",
+    # 「パン」が食品以外の語に含まれるケース（ショパン等）
+    "ショパン",
     # 催事ではないプロモーション・キャンペーン系
     "%オフ", "割引", "ポイント", "キャンペーン", "プレゼント",
     "サービスデー", "無料", "ご招待", "セール",
@@ -55,18 +59,18 @@ MIN_EVENT_DAYS = 3
 
 
 def is_food_event(event: Event) -> bool:
-    text = f"{event.title} {event.category} {event.floor}"
+    full_text = f"{event.title} {event.category} {event.floor}"
 
     for kw in EXCLUDE_KEYWORDS:
-        if kw in text:
+        if kw in full_text:
             return False
 
     for kw in INCLUDE_KEYWORDS:
-        if kw in text:
+        if kw in full_text:
             return True
 
     for kw in FOOD_CATEGORIES:
-        if kw in text:
+        if kw in full_text:
             return True
 
     return False
@@ -89,14 +93,18 @@ def _is_recent(event: Event) -> bool:
 
 
 def _extract_core_title(title: str) -> str:
-    """冗長な前置き句を除去して催事名本体を返す。
+    """冗長な前置き句・装飾を除去して催事名本体を返す。
     例: 「海明け 雪どけ ぐるめぐり 大北海道展」→「大北海道展」
         「雅に薫る 京の逸品 京都展」→「京都展」
+        「【開店30周年記念】初夏の大北海道展」→「初夏の大北海道展」
     マッチしない場合はそのまま返す。"""
-    matches = re.findall(r'\S+(?:展|博|フェア|マルシェ)', title)
+    # まず【...】などカッコ内の装飾を除去
+    t = re.sub(r'[＜<【\[(（][^＞>】\])）]{0,30}[＞>】\])）]', '', title).strip()
+    # スペース区切りで最も長い「展/博/フェア/マルシェ」で終わる語を抽出
+    matches = re.findall(r'\S+(?:展|博|フェア|マルシェ)', t)
     if matches:
         return max(matches, key=len)
-    return title
+    return t if t else title
 
 
 def _normalize_title(title: str) -> str:
@@ -114,10 +122,20 @@ def filter_events(events: list[Event]) -> list[Event]:
         if is_food_event(e) and _duration_days(e) >= MIN_EVENT_DAYS and _is_recent(e)
     ]
 
+    # ★タイトルを先に正規化（前置き句・年除去）してからデdup・マージする
+    # これにより「イタリア展2026」と「イタリア展」が同一イベントとして統合される
+    pre_cleaned = []
+    for e in passed:
+        core = _extract_core_title(e.title)
+        if core != e.title:
+            e = Event(store=e.store, title=core, start=e.start, end=e.end,
+                      floor=e.floor, url=e.url, category=e.category)
+        pre_cleaned.append(e)
+
     # 同一店舗・タイトル先頭20字・開始日が同じものは重複とみなす
     seen: set[tuple] = set()
     unique = []
-    for e in passed:
+    for e in pre_cleaned:
         key = (e.store, e.title[:20], e.start)
         if key not in seen:
             seen.add(key)
@@ -148,12 +166,4 @@ def filter_events(events: list[Event]) -> list[Event]:
                 floor=base.floor, url=base.url, category=base.category,
             ))
 
-    # 全イベントのタイトルから冗長な前置き句を除去
-    result = []
-    for e in merged:
-        core = _extract_core_title(e.title)
-        if core != e.title:
-            e = Event(store=e.store, title=core, start=e.start, end=e.end,
-                      floor=e.floor, url=e.url, category=e.category)
-        result.append(e)
-    return result
+    return merged
