@@ -84,6 +84,13 @@ def _duration_days(event: Event) -> int:
         return 999
 
 
+def _is_target_floor(event: Event) -> bool:
+    """東武池袋は8階催事場のイベントのみ対象"""
+    if event.store == "東武池袋":
+        return bool(re.search(r'8[F階]', event.floor))
+    return True
+
+
 def _is_recent(event: Event) -> bool:
     """終了日が7日以上前のイベントは除外（古いスクレイプデータ混入防止）"""
     try:
@@ -119,7 +126,8 @@ def _normalize_title(title: str) -> str:
 def filter_events(events: list[Event]) -> list[Event]:
     passed = [
         e for e in events
-        if is_food_event(e) and _duration_days(e) >= MIN_EVENT_DAYS and _is_recent(e)
+        if is_food_event(e) and _duration_days(e) >= MIN_EVENT_DAYS
+        and _is_recent(e) and _is_target_floor(e)
     ]
 
     # ★タイトルを先に正規化（前置き句・年除去）してからデdup・マージする

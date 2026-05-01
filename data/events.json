@@ -1,15 +1,5 @@
 [
   {
-    "id": "526a786e7c25",
-    "store": "東武池袋",
-    "title": "柏餅・ちまき特集",
-    "start": "2026-04-23",
-    "end": "2026-05-07",
-    "floor": "B2F・B1F食品",
-    "url": "https://www.tobu-dept.jp/ikebukuro/event/detail/8781",
-    "category": ""
-  },
-  {
     "id": "0d7013a75019",
     "store": "東武池袋",
     "title": "大北海道展",
@@ -17,16 +7,6 @@
     "end": "2026-05-07",
     "floor": "8F催事場",
     "url": "https://www.tobu-dept.jp/ikebukuro/event/detail/8713",
-    "category": ""
-  },
-  {
-    "id": "b22251bd0810",
-    "store": "東武池袋",
-    "title": "おいしい暦",
-    "start": "2026-05-01",
-    "end": "2026-06-01",
-    "floor": "B2F・B1F食品",
-    "url": "https://www.tobu-dept.jp/ikebukuro/event/detail/8180",
     "category": ""
   },
   {
