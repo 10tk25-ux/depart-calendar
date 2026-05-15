@@ -20,16 +20,6 @@
     "category": ""
   },
   {
-    "id": "e40e545f20f7",
-    "store": "京王新宿",
-    "title": "スイーツ＆パン博",
-    "start": "2026-04-24",
-    "end": "2026-05-07",
-    "floor": "7F大催事場",
-    "url": "https://www.keionet.com/info/shinjuku/news/sweets-bread.html",
-    "category": ""
-  },
-  {
     "id": "109e7c6c4fb6",
     "store": "京王新宿",
     "title": "京都展",
@@ -40,16 +30,6 @@
     "category": ""
   },
   {
-    "id": "81b4a69dc42c",
-    "store": "日本橋三越",
-    "title": "イタリア展",
-    "start": "2026-04-23",
-    "end": "2026-05-07",
-    "floor": "日本橋三越本店 本館7階 催物会場",
-    "url": "https://www.bussanten.info/italia-ten-nihombashi-mitsukoshi-2026/",
-    "category": ""
-  },
-  {
     "id": "b8d47b4ec51c",
     "store": "新宿高島屋",
     "title": "初夏の大北海道展",
@@ -57,6 +37,16 @@
     "end": "2026-06-03",
     "floor": "",
     "url": "https://www.takashimaya.co.jp/shinjuku/topics/event.html",
+    "category": "食品"
+  },
+  {
+    "id": "35a4f31ce401",
+    "store": "日本橋三越",
+    "title": "とっておきの山形展",
+    "start": "2026-05-27",
+    "end": "2026-06-02",
+    "floor": "",
+    "url": "https://www.mistore.jp/store/nihombashi/event_calendar.html",
     "category": "食品"
   }
 ]
