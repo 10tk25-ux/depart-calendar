@@ -30,14 +30,14 @@
     "category": ""
   },
   {
-    "id": "b8d47b4ec51c",
-    "store": "新宿高島屋",
-    "title": "初夏の大北海道展",
-    "start": "2026-05-20",
-    "end": "2026-06-03",
-    "floor": "",
-    "url": "https://www.takashimaya.co.jp/shinjuku/topics/event.html",
-    "category": "食品"
+    "id": "b4d3fc6449c0",
+    "store": "京王新宿",
+    "title": "物産と観光展",
+    "start": "2026-06-11",
+    "end": "2026-06-18",
+    "floor": "7F大催事場",
+    "url": "https://www.keionet.com/info/shinjuku/topics/000231.html",
+    "category": ""
   },
   {
     "id": "35a4f31ce401",
@@ -45,8 +45,18 @@
     "title": "とっておきの山形展",
     "start": "2026-05-27",
     "end": "2026-06-02",
+    "floor": "日本橋三越本店 本館7階 催物会場",
+    "url": "https://www.bussanten.info/totteoki-yamagata-ten-nihombashi-mitsukoshi-2026/",
+    "category": ""
+  },
+  {
+    "id": "b8d47b4ec51c",
+    "store": "新宿高島屋",
+    "title": "初夏の大北海道展",
+    "start": "2026-05-20",
+    "end": "2026-06-03",
     "floor": "",
-    "url": "https://www.mistore.jp/store/nihombashi/event_calendar.html",
+    "url": "https://www.takashimaya.co.jp/shinjuku/topics/event.html",
     "category": "食品"
   }
 ]
