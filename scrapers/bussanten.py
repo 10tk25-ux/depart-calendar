@@ -69,6 +69,12 @@ def _scrape_article(url: str) -> list[Event]:
         if not title:
             return []
 
+        # 記事タイトルが「○月○日で『イベント名』開催、説明文」の形式の場合、
+        # 「」または『』内のイベント名だけを抽出する
+        bracketed = re.findall(r"[「『](.*?)[」』]", title)
+        if bracketed:
+            title = bracketed[0].strip()
+
         # 店舗名・年を除去（長いキーを優先してマッチ）
         for key in sorted(STORE_MAP.keys(), key=len, reverse=True):
             title = title.replace(key, "")
