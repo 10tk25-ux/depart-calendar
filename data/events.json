@@ -1,15 +1,5 @@
 [
   {
-    "id": "afa7a247e247",
-    "store": "東武池袋",
-    "title": "夏の職人展",
-    "start": "2026-06-10",
-    "end": "2026-06-16",
-    "floor": "8F催事場",
-    "url": "https://www.tobu-dept.jp/ikebukuro/event/detail/8835",
-    "category": ""
-  },
-  {
     "id": "b4d3fc6449c0",
     "store": "京王新宿",
     "title": "物産と観光展",
@@ -17,6 +7,16 @@
     "end": "2026-06-18",
     "floor": "7F大催事場",
     "url": "https://www.keionet.com/info/shinjuku/news/shinshu_hida.html",
+    "category": ""
+  },
+  {
+    "id": "585a449735de",
+    "store": "京王新宿",
+    "title": "夏のKeioスイーツ博",
+    "start": "2026-07-17",
+    "end": "2026-07-29",
+    "floor": "7F大催事場",
+    "url": "https://www.keionet.com/info/shinjuku/topics/000231.html",
     "category": ""
   }
 ]
