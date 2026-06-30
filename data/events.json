@@ -10,16 +10,6 @@
     "category": ""
   },
   {
-    "id": "5327b2f8f561",
-    "store": "京王新宿",
-    "title": "福岡うまいもの大会",
-    "start": "2026-06-19",
-    "end": "2026-06-25",
-    "floor": "7F大催事場",
-    "url": "https://www.keionet.com/info/shinjuku/news/fukuoka.html",
-    "category": ""
-  },
-  {
     "id": "585a449735de",
     "store": "京王新宿",
     "title": "夏のKeioスイーツ博",
@@ -28,25 +18,5 @@
     "floor": "7F大催事場",
     "url": "https://www.keionet.com/info/shinjuku/news/sweets-expo.html",
     "category": ""
-  },
-  {
-    "id": "dd39ad423eba",
-    "store": "新宿伊勢丹",
-    "title": "ISETAN WAGASHI WEEK",
-    "start": "2026-06-16",
-    "end": "2026-07-01",
-    "floor": "",
-    "url": "https://www.bussanten.info/isetan-wagashi-week-2026/",
-    "category": ""
-  },
-  {
-    "id": "1f591b02f66c",
-    "store": "日本橋三越",
-    "title": "夏のあんこ博",
-    "start": "2026-06-24",
-    "end": "2026-06-30",
-    "floor": "",
-    "url": "https://www.mistore.jp/store/nihombashi/event_calendar.html",
-    "category": "食品"
   }
 ]
