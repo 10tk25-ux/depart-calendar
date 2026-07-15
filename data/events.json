@@ -10,6 +10,26 @@
     "category": ""
   },
   {
+    "id": "65891812232d",
+    "store": "東武池袋",
+    "title": "台湾フェア",
+    "start": "2026-07-22",
+    "end": "2026-07-28",
+    "floor": "8F催事場",
+    "url": "https://www.tobu-dept.jp/ikebukuro/event/detail/8954",
+    "category": ""
+  },
+  {
+    "id": "42fec476ad7f",
+    "store": "東武池袋",
+    "title": "渡瀬悠宇の世界『ふしぎ遊戯』原画展",
+    "start": "2026-07-22",
+    "end": "2026-08-05",
+    "floor": "8F催事場",
+    "url": "https://www.tobu-dept.jp/ikebukuro/event/detail/9005",
+    "category": ""
+  },
+  {
     "id": "585a449735de",
     "store": "京王新宿",
     "title": "夏のKeioスイーツ博",
@@ -17,6 +37,26 @@
     "end": "2026-07-29",
     "floor": "7F大催事場",
     "url": "https://www.keionet.com/info/shinjuku/news/sweets-expo.html",
+    "category": ""
+  },
+  {
+    "id": "9ce894b72850",
+    "store": "京王新宿",
+    "title": "生活応援フェア",
+    "start": "2026-08-01",
+    "end": "2026-08-05",
+    "floor": "7F大催事場",
+    "url": "https://www.keionet.com/info/shinjuku/topics/000231.html",
+    "category": ""
+  },
+  {
+    "id": "2d3e8442f53c",
+    "store": "京王新宿",
+    "title": "大北海道展",
+    "start": "2026-08-20",
+    "end": "2026-09-10",
+    "floor": "7F大催事場",
+    "url": "https://www.keionet.com/info/shinjuku/topics/000231.html",
     "category": ""
   }
 ]
