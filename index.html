@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>都内デパート 催事カレンダー（食品・物産展）</title>
 
+  <!-- Outfit font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
   <!-- FullCalendar -->
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
@@ -12,15 +17,40 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    :root {
+      /* Nordic palette */
+      --bg:    #F4F0EA;
+      --warm:  #FDFAF5;
+      --stone: #EDE8DF;
+      --grid:  #D9D4CA;
+      --cell:  #7A7268;
+      --text:  #2C2825;
+      --sub:   #8C8077;
+      --sat:   #5B86C9;
+      --sun:   #C96862;
+      --amber: #C9973A;
+
+      /* Apple animation easings */
+      --ease-open:   cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-close:  cubic-bezier(0.7, 0, 0.84, 0);
+      --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+      /* FullCalendar token overrides */
+      --fc-border-color: #7A7268;
+      --fc-page-bg-color: #FDFAF5;
+      --fc-neutral-bg-color: #EDE8DF;
+      --fc-list-event-hover-bg-color: #EDE8DF;
+    }
+
     body {
-      font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
-      background: #f5f5f5;
-      color: #333;
+      font-family: 'Outfit', 'Century Gothic', 'Futura', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
     }
 
     header {
-      background: #fff;
-      border-bottom: 2px solid #e0e0e0;
+      background: var(--warm);
+      border-bottom: 1px solid var(--grid);
       padding: 12px 20px;
       display: flex;
       align-items: center;
@@ -28,30 +58,32 @@
       flex-wrap: wrap;
     }
     header h1 {
-      font-size: 1.1rem;
-      font-weight: 700;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
       white-space: nowrap;
     }
 
     .filters {
       display: flex;
-      gap: 10px;
+      gap: 7px;
       flex-wrap: wrap;
       align-items: center;
     }
     .filter-label {
-      font-size: 0.8rem;
-      color: #666;
+      font-size: 0.75rem;
+      color: var(--sub);
     }
     .store-filter {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
       cursor: pointer;
-      font-size: 0.82rem;
-      padding: 3px 8px;
+      font-size: 0.76rem;
+      padding: 3px 9px 3px 6px;
       border-radius: 20px;
-      border: 2px solid transparent;
+      border: 1.5px solid var(--grid);
+      color: var(--text);
       user-select: none;
       transition: opacity 0.15s;
     }
@@ -60,15 +92,16 @@
     .store-filter.inactive { opacity: 0.35; }
 
     .dot {
-      width: 10px; height: 10px;
+      width: 8px; height: 8px;
       border-radius: 50%;
       display: inline-block;
+      flex-shrink: 0;
     }
 
     #updated {
       margin-left: auto;
-      font-size: 0.72rem;
-      color: #999;
+      font-size: 0.68rem;
+      color: var(--sub);
     }
 
     main {
@@ -81,10 +114,10 @@
       position: relative;
     }
     #calendar {
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 1px 4px rgba(0,0,0,.08);
-      padding: 12px;
+      background: var(--warm);
+      border-radius: 10px;
+      border: 1px solid var(--grid);
+      overflow: hidden;
     }
 
     /* 左右ホバー矢印（PC専用） */
@@ -95,14 +128,14 @@
       transform: translateY(-50%);
       width: 40px;
       height: 88px;
-      background: rgba(255,255,255,0.92);
-      border: 1px solid #bbb;
+      background: var(--warm);
+      border: 1.5px solid var(--cell);
       border-radius: 8px;
-      box-shadow: 0 3px 12px rgba(0,0,0,.2);
+      box-shadow: 0 3px 12px rgba(0,0,0,.15);
       cursor: pointer;
       font-size: 2rem;
       font-weight: 300;
-      color: #333;
+      color: var(--sub);
       align-items: center;
       justify-content: center;
       opacity: 0;
@@ -121,88 +154,160 @@
     .cal-nav-prev:hover {
       opacity: 1;
       transform: translateY(-50%) translateX(8px);
-      background: #fff;
-      box-shadow: 0 4px 16px rgba(0,0,0,.25);
+      background: var(--stone);
+      box-shadow: 0 4px 16px rgba(0,0,0,.18);
     }
     .cal-nav-next:hover {
       opacity: 1;
       transform: translateY(-50%) translateX(-8px);
-      background: #fff;
-      box-shadow: 0 4px 16px rgba(0,0,0,.25);
+      background: var(--stone);
+      box-shadow: 0 4px 16px rgba(0,0,0,.18);
     }
     @media (min-width: 601px) {
       .cal-nav { display: flex; }
     }
 
     /* 曜日別の日付数字の色 */
-    .fc-day-sat .fc-daygrid-day-number { color: #0288d1 !important; }
-    .fc-day-sun .fc-daygrid-day-number { color: #d32f2f !important; }
+    .fc-day-sat .fc-daygrid-day-number { color: var(--sat) !important; }
+    .fc-day-sun .fc-daygrid-day-number { color: var(--sun) !important; }
 
     /* 過去部分のイベント帯 */
     .fc-event.event-past {
-      opacity: 0.30 !important;
-      filter: grayscale(65%) !important;
+      opacity: 0.28 !important;
+      filter: grayscale(55%) !important;
     }
 
-    /* 今日の日付セルを濃く */
+    /* 今日の日付セル */
     .fc .fc-day-today {
-      background: #ff8c00 !important;
+      background: var(--amber) !important;
+    }
+    .fc .fc-day-today .fc-daygrid-day-number {
+      color: #fff !important;
+      font-weight: 600;
     }
 
-    /* 月境界線：各月1日セルの左辺ボーダーを太線に */
-    .fc-day[data-date$="-01"] {
-      border-left: 3px solid #000 !important;
-    }
-
-    /* スマホ縦スクロール: 月ラベル（fc-daygrid-day-top の flex 左端に配置） */
+    /* スマホ縦スクロール: 月ラベル */
     .fc-month-start-label {
       font-size: 0.62rem;
-      font-weight: 700;
-      color: #ff69b4;
+      font-weight: 600;
+      color: var(--amber);
       line-height: 1;
       align-self: center;
       margin-left: 2px;
       pointer-events: none;
     }
 
-    /* モーダル */
-    #modal-overlay {
-      display: none;
+    /* store gradient event bars */
+    .fc-event.ev-toubu  { background: linear-gradient(to right, #4A78BA, #6B9ADE) !important; border-color: transparent !important; }
+    .fc-event.ev-keio   { background: linear-gradient(to right, #3D9E92, #62C0B2) !important; border-color: transparent !important; }
+    .fc-event.ev-taka   { background: linear-gradient(to right, #C46A62, #E08A82) !important; border-color: transparent !important; }
+    .fc-event.ev-isetan { background: linear-gradient(to right, #9470B2, #B892CE) !important; border-color: transparent !important; }
+    .fc-event.ev-mitsu  { background: linear-gradient(to right, #C87E38, #E8A055) !important; border-color: transparent !important; }
+
+    /* ── バックドロップ ─────────────────────── */
+    #ev-backdrop {
       position: fixed; inset: 0;
-      background: rgba(0,0,0,.45);
+      background: rgba(44,40,37,.4);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      opacity: 0; pointer-events: none;
+      transition: opacity .5s var(--ease-open);
       z-index: 1000;
-      align-items: center;
-      justify-content: center;
     }
-    #modal-overlay.open { display: flex; }
-    #modal {
-      background: #fff;
-      border-radius: 10px;
-      padding: 24px;
-      max-width: 480px;
-      width: 90%;
-      box-shadow: 0 4px 20px rgba(0,0,0,.2);
-      position: relative;
+    #ev-backdrop.on { opacity: 1; pointer-events: all; }
+
+    /* ── 展開モーダル ───────────────────────── */
+    #ev-modal {
+      position: fixed; z-index: 1001;
+      background: var(--warm);
+      overflow: hidden;
+      display: none;
+      flex-direction: column;
+      will-change: left, top, width, height;
     }
-    #modal h2 { font-size: 1rem; margin-bottom: 12px; line-height: 1.5; }
-    #modal table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
-    #modal td { padding: 5px 0; vertical-align: top; }
-    #modal td:first-child { width: 80px; color: #666; font-size: 0.8rem; }
-    #modal a { color: #1a73e8; text-decoration: none; }
-    #modal a:hover { text-decoration: underline; }
-    #modal-close {
-      position: absolute; top: 12px; right: 14px;
-      background: none; border: none;
-      font-size: 1.4rem; cursor: pointer; color: #888;
-      line-height: 1;
+    #ev-modal.open { display: flex; }
+
+    /* ヘッダー */
+    .ev-head {
+      flex-shrink: 0;
+      height: 220px;
+      position: relative; overflow: hidden;
     }
-    #modal-close:hover { color: #333; }
+    .ev-head-bg { position: absolute; inset: 0; }
+    .ev-head-fade {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 70px;
+      background: linear-gradient(to bottom, transparent, rgba(0,0,0,.15));
+    }
+    .ev-head-inner {
+      position: relative; height: 100%;
+      padding: 0 24px 22px;
+      display: flex; flex-direction: column; justify-content: flex-end; gap: 4px;
+      opacity: 0; transform: translateY(10px);
+      transition: opacity .4s var(--ease-open), transform .4s var(--ease-open);
+    }
+    #ev-modal.ready .ev-head-inner { opacity: 1; transform: none; }
+
+    .ev-store {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: .12em; text-transform: uppercase;
+      color: rgba(255,255,255,.65);
+    }
+    .ev-title {
+      font-size: 26px; font-weight: 700;
+      color: #fff; letter-spacing: -.3px; line-height: 1.1;
+    }
+
+    /* 閉じるボタン */
+    .ev-close {
+      position: absolute; top: 14px; right: 14px;
+      width: 30px; height: 30px;
+      background: rgba(0,0,0,.3); border: none; border-radius: 50%;
+      color: #fff; font-size: 14px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-family: inherit;
+      opacity: 0; transform: scale(.6);
+      transition: opacity .35s .2s, transform .45s .2s var(--ease-spring);
+    }
+    #ev-modal.ready .ev-close { opacity: 1; transform: scale(1); }
+    .ev-close:hover { background: rgba(0,0,0,.5); }
+
+    /* ボディ */
+    .ev-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .ev-body {
+      padding: 24px 24px 48px;
+      opacity: 0; transform: translateY(14px);
+      transition: opacity .4s .12s var(--ease-open), transform .4s .12s var(--ease-open);
+    }
+    #ev-modal.ready .ev-body { opacity: 1; transform: none; }
+
+    .ev-table { width: 100%; border-collapse: collapse; font-size: .9rem; margin-bottom: 20px; }
+    .ev-table td { padding: 7px 0; vertical-align: top; border-bottom: 1px solid var(--stone); }
+    .ev-table td:first-child { width: 70px; color: var(--sub); font-size: .78rem; padding-right: 12px; }
+    .ev-table tr:last-child td { border-bottom: none; }
+
+    .ev-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: linear-gradient(to right, #3D9E92, #62C0B2);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 22px; padding: 10px 22px;
+      font-size: .88rem; font-weight: 600;
+      transition: transform .25s var(--ease-spring), filter .2s;
+    }
+    .ev-link:hover { filter: brightness(1.08); }
+    .ev-link:active { transform: scale(.93); }
+
+    @media (prefers-reduced-motion: reduce) {
+      #ev-backdrop, #ev-modal, .ev-head-inner, .ev-body, .ev-close {
+        transition: none !important;
+      }
+    }
 
     @media (max-width: 600px) {
       header { padding: 10px 12px; gap: 10px; }
       main { padding: 8px; }
       .fc-prev-button, .fc-next-button { display: none !important; }
-      /* リスト表示スタイル調整 */
       .fc-list-event-title { font-size: 0.82rem; }
       .fc-list-day-text, .fc-list-day-side-text { font-size: 0.85rem; }
       .fc-list-event td { padding: 6px 8px; }
@@ -228,19 +333,9 @@
   </div>
 </main>
 
-<!-- イベント詳細モーダル -->
-<div id="modal-overlay">
-  <div id="modal">
-    <button id="modal-close" aria-label="閉じる">&times;</button>
-    <h2 id="modal-title"></h2>
-    <table>
-      <tr><td>店舗</td><td id="modal-store"></td></tr>
-      <tr><td>会期</td><td id="modal-period"></td></tr>
-      <tr><td>フロア</td><td id="modal-floor"></td></tr>
-      <tr><td>詳細</td><td><a id="modal-link" href="#" target="_blank" rel="noopener">公式ページを開く →</a></td></tr>
-    </table>
-  </div>
-</div>
+<!-- イベント詳細モーダル（展開アニメーション） -->
+<div id="ev-backdrop"></div>
+<div id="ev-modal"></div>
 
 <script>
 // 日本の祝日（2025〜2026年）
@@ -258,11 +353,19 @@ const JP_HOLIDAYS = new Set([
 ]);
 
 const STORE_COLORS = {
-  "東武池袋": "#1565C0",
-  "京王新宿": "#00897B",
-  "新宿高島屋": "#C62828",
-  "新宿伊勢丹": "#6A1B9A",
-  "日本橋三越": "#E65100",
+  "東武池袋":  "#4A78BA",
+  "京王新宿":  "#3D9E92",
+  "新宿高島屋": "#C46A62",
+  "新宿伊勢丹": "#9470B2",
+  "日本橋三越": "#C87E38",
+};
+
+const STORE_CLASS = {
+  "東武池袋":  "ev-toubu",
+  "京王新宿":  "ev-keio",
+  "新宿高島屋": "ev-taka",
+  "新宿伊勢丹": "ev-isetan",
+  "日本橋三越": "ev-mitsu",
 };
 
 const activeStores = new Set(Object.keys(STORE_COLORS));
@@ -274,7 +377,6 @@ async function loadEvents() {
   const res = await fetch("data/events.json?" + Date.now());
   allEvents = await res.json();
 
-  // 更新日時を最新 scrape の start 日付から推定
   const updatedEl = document.getElementById("updated");
   updatedEl.textContent = "最終更新: " + new Date().toLocaleDateString("ja-JP");
 
@@ -290,25 +392,25 @@ function toFCEvents(events) {
   events
     .filter(e => activeStores.has(e.store))
     .forEach(e => {
-      const color = STORE_COLORS[e.store] || "#607D8B";
-      const label = `[${e.store.replace(/池袋|新宿|日本橋/, "")}] ${e.title}`;
-      const base = { title: label, allDay: true, color, extendedProps: e };
+      const color      = STORE_COLORS[e.store] || "#607D8B";
+      const storeClass = STORE_CLASS[e.store]  || "";
+      const label      = `[${e.store.replace(/池袋|新宿|日本橋/, "")}] ${e.title}`;
+      const base       = { title: label, allDay: true, color, extendedProps: e };
 
       const startDate = new Date(e.start);
       const endDate   = new Date(e.end);
 
       if (endDate <= today) {
-        // 全期間が過去
         result.push({ ...base, id: e.id, start: e.start, end: e.end,
-                      classNames: ['event-past'] });
+                      classNames: [storeClass, 'event-past'].filter(Boolean) });
       } else if (startDate < today) {
-        // 開催中：過去部分（グレー）と残り部分（通常色）に分割
         result.push({ ...base, id: e.id + '-p', start: e.start, end: todayStr,
-                      classNames: ['event-past'] });
-        result.push({ ...base, id: e.id + '-f', start: todayStr, end: e.end });
+                      classNames: [storeClass, 'event-past'].filter(Boolean) });
+        result.push({ ...base, id: e.id + '-f', start: todayStr, end: e.end,
+                      classNames: [storeClass].filter(Boolean) });
       } else {
-        // 全期間が未来
-        result.push({ ...base, id: e.id, start: e.start, end: e.end });
+        result.push({ ...base, id: e.id, start: e.start, end: e.end,
+                      classNames: [storeClass].filter(Boolean) });
       }
     });
   return result;
@@ -336,32 +438,105 @@ function buildFilters() {
   });
 }
 
-function showModal(event) {
-  const p = event.extendedProps;
-  document.getElementById("modal-title").textContent = p.title;
-  document.getElementById("modal-store").textContent = p.store;
+const STORE_GRADIENTS = {
+  "東武池袋":  "linear-gradient(145deg, #4A78BA 0%, #6B9ADE 100%)",
+  "京王新宿":  "linear-gradient(145deg, #3D9E92 0%, #62C0B2 100%)",
+  "新宿高島屋": "linear-gradient(145deg, #C46A62 0%, #E08A82 100%)",
+  "新宿伊勢丹": "linear-gradient(145deg, #9470B2 0%, #B892CE 100%)",
+  "日本橋三越": "linear-gradient(145deg, #C87E38 0%, #E8A055 100%)",
+};
+
+let _activeRect = null;
+
+function showModal(fcEvent, jsEvent) {
+  const p = fcEvent.extendedProps;
+
+  const cx = jsEvent.clientX, cy = jsEvent.clientY;
+  const R  = 28;
+  _activeRect = { left: cx - R, top: cy - R, width: R * 2, height: R * 2 };
+
+  const grad = STORE_GRADIENTS[p.store] || "linear-gradient(145deg,#455A64,#90A4AE)";
 
   const startDate = new Date(p.start);
-  // end は exclusive なので -1日表示
-  const endDate = new Date(p.end);
+  const endDate   = new Date(p.end);
   endDate.setDate(endDate.getDate() - 1);
   const fmt = d => d.toLocaleDateString("ja-JP", {year:"numeric",month:"long",day:"numeric"});
-  document.getElementById("modal-period").textContent =
-    p.start === p.end ? fmt(startDate) : `${fmt(startDate)} 〜 ${fmt(endDate)}`;
+  const period = p.start === p.end ? fmt(startDate) : `${fmt(startDate)} 〜 ${fmt(endDate)}`;
 
-  document.getElementById("modal-floor").textContent = p.floor || "—";
-  const link = document.getElementById("modal-link");
-  link.href = p.url || "#";
+  const modal    = document.getElementById("ev-modal");
+  const backdrop = document.getElementById("ev-backdrop");
 
-  document.getElementById("modal-overlay").classList.add("open");
+  modal.innerHTML = `
+    <div class="ev-head">
+      <div class="ev-head-bg" style="background:${grad}"></div>
+      <div class="ev-head-fade"></div>
+      <div class="ev-head-inner">
+        <div class="ev-store">${p.store}</div>
+        <div class="ev-title">${p.title}</div>
+      </div>
+      <button class="ev-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="ev-scroll">
+      <div class="ev-body">
+        <table class="ev-table">
+          <tr><td>会期</td><td>${period}</td></tr>
+          <tr><td>フロア</td><td>${p.floor || "—"}</td></tr>
+        </table>
+        <a class="ev-link" href="${p.url || "#"}" target="_blank" rel="noopener">公式ページを開く →</a>
+      </div>
+    </div>`;
+
+  const W = window.innerWidth, H = window.innerHeight;
+
+  Object.assign(modal.style, {
+    left: _activeRect.left + "px", top: _activeRect.top + "px",
+    width: _activeRect.width + "px", height: _activeRect.height + "px",
+    borderRadius: "50%", transition: "none", display: "flex",
+  });
+  modal.classList.add("open");
+  backdrop.classList.add("on");
+  document.body.style.overflow = "hidden";
+
+  modal.getBoundingClientRect(); // force reflow
+
+  const T = "0.6s", E = "cubic-bezier(0.16,1,0.3,1)";
+  setTimeout(() => {
+    modal.style.transition =
+      `left ${T} ${E},top ${T} ${E},width ${T} ${E},height ${T} ${E},border-radius ${T} ${E}`;
+    modal.style.left = "0px"; modal.style.top = "0px";
+    modal.style.width = W + "px"; modal.style.height = H + "px";
+    modal.style.borderRadius = "0px";
+    setTimeout(() => modal.classList.add("ready"), 300);
+  }, 0);
 }
 
-document.getElementById("modal-close").addEventListener("click", () => {
-  document.getElementById("modal-overlay").classList.remove("open");
-});
-document.getElementById("modal-overlay").addEventListener("click", (e) => {
-  if (e.target === e.currentTarget) e.currentTarget.classList.remove("open");
-});
+function closeModal() {
+  const modal    = document.getElementById("ev-modal");
+  const backdrop = document.getElementById("ev-backdrop");
+  if (!modal.classList.contains("open")) return;
+  const rect = _activeRect;
+
+  modal.classList.remove("ready");
+
+  setTimeout(() => {
+    backdrop.classList.remove("on");
+    const T = "0.46s", E = "cubic-bezier(0.7,0,0.84,0)";
+    modal.style.transition =
+      `left ${T} ${E},top ${T} ${E},width ${T} ${E},height ${T} ${E},border-radius ${T} ${E}`;
+    modal.style.left   = rect.left + "px";   modal.style.top    = rect.top + "px";
+    modal.style.width  = rect.width + "px";  modal.style.height = rect.height + "px";
+    modal.style.borderRadius = "6px";
+    setTimeout(() => {
+      modal.style.display = "none";
+      modal.classList.remove("open");
+      document.body.style.overflow = "";
+      _activeRect = null;
+    }, 460);
+  }, 80);
+}
+
+document.getElementById("ev-backdrop").addEventListener("click", closeModal);
+document.addEventListener("keydown", e => e.key === "Escape" && closeModal());
 
 (async () => {
   buildFilters();
@@ -369,10 +544,9 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
 
   const isMobile = () => window.innerWidth <= 600;
 
-  // 今週月曜日の行を画面最上部に表示（初期表示・リサイズ時）
   function scrollToThisWeek() {
     const today = new Date();
-    const daysFromMon = (today.getDay() + 6) % 7; // 月曜起点での経過日数
+    const daysFromMon = (today.getDay() + 6) % 7;
     const mon = new Date(today);
     mon.setDate(today.getDate() - daysFromMon);
     const dateStr = `${mon.getFullYear()}-${String(mon.getMonth()+1).padStart(2,'0')}-${String(mon.getDate()).padStart(2,'0')}`;
@@ -381,7 +555,6 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
     if (target) target.scrollIntoView({ behavior: 'instant', block: 'start' });
   }
 
-  // 「今日」ボタン：今日のセルを画面上部へ
   function scrollToToday() {
     const todayEl = calEl.querySelector('.fc-day-today');
     if (todayEl) todayEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -414,10 +587,19 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
     dayCellContent: (info) => ({ html: String(info.date.getDate()) }),
     events: toFCEvents(allEvents),
     dayCellDidMount(info) {
-      const d = info.date;
-      // 月ラベル：スマホ縦スクロール時、1日セルの左側に配置
-      // .fc-daygrid-day-top は flex-direction:row-reverse のため
-      // appendChild すると DOM 末尾 = 視覚的に左端になる
+      const d   = info.date;
+      const now = new Date(); now.setHours(0, 0, 0, 0);
+
+      // 交互月背景（偶数月: warm white / 奇数月: stone）
+      info.el.style.background = d.getMonth() % 2 === 0 ? '#FDFAF5' : '#EDE8DF';
+
+      // 過去の日付は数字を薄く
+      if (d < now) {
+        const numEl = info.el.querySelector('.fc-daygrid-day-number');
+        if (numEl) numEl.style.opacity = '0.28';
+      }
+
+      // スマホ：月初に月ラベル
       if (isMobile() && d.getDate() === 1) {
         const top = info.el.querySelector('.fc-daygrid-day-top');
         if (top) {
@@ -427,16 +609,17 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
           top.appendChild(label);
         }
       }
+
       // 祝日は赤色
       const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
       if (JP_HOLIDAYS.has(dateStr)) {
         const numEl = info.el.querySelector('.fc-daygrid-day-number');
-        if (numEl) numEl.style.setProperty('color', '#d32f2f', 'important');
+        if (numEl) numEl.style.setProperty('color', '#C96862', 'important');
       }
     },
     eventClick(info) {
       info.jsEvent.preventDefault();
-      showModal(info.event);
+      showModal(info.event, info.jsEvent);
     },
     height: "auto",
     dayMaxEvents: 5,
@@ -444,16 +627,13 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
   });
   calendarInstance.render();
 
-  // モバイル初期表示時は今週の行を先頭に
   if (isMobile()) {
     setTimeout(scrollToThisWeek, 200);
   }
 
-  // サイド矢印ボタン（PC）
   document.getElementById("cal-prev").addEventListener("click", () => calendarInstance.prev());
   document.getElementById("cal-next").addEventListener("click", () => calendarInstance.next());
 
-  // 画面幅変化でビューを切り替え（PC⇔スマホ回転など）
   let lastMobile = isMobile();
   window.addEventListener("resize", () => {
     const nowMobile = isMobile();
@@ -471,7 +651,6 @@ document.getElementById("modal-overlay").addEventListener("click", (e) => {
     }
   });
 
-  // スワイプで月移動（PCグリッド表示時のみ）
   let touchStartX = 0;
   calEl.addEventListener("touchstart", (e) => {
     touchStartX = e.touches[0].clientX;
