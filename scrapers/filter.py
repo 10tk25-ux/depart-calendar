@@ -1,3 +1,5 @@
+import json
+import os
 import re
 from collections import defaultdict
 from datetime import date, timedelta
@@ -73,22 +75,78 @@ FOOD_CATEGORIES = [
 MIN_EVENT_DAYS = 3
 
 
-def is_food_event(event: Event) -> bool:
+def _has_exclude_keyword(event: Event) -> bool:
     full_text = f"{event.title} {event.category} {event.floor}"
+    return any(kw in full_text for kw in EXCLUDE_KEYWORDS)
 
-    for kw in EXCLUDE_KEYWORDS:
-        if kw in full_text:
-            return False
 
-    for kw in INCLUDE_KEYWORDS:
-        if kw in full_text:
-            return True
+def _has_include_keyword(event: Event) -> bool:
+    """AIが使えない場合のフォールバック判定（旧ロジック）"""
+    full_text = f"{event.title} {event.category} {event.floor}"
+    return any(kw in full_text for kw in INCLUDE_KEYWORDS) or \
+           any(kw in full_text for kw in FOOD_CATEGORIES)
 
-    for kw in FOOD_CATEGORIES:
-        if kw in full_text:
-            return True
 
-    return False
+def is_food_event(event: Event) -> bool:
+    """キーワードのみでの判定（AI不使用時のフォールバック用）"""
+    if _has_exclude_keyword(event):
+        return False
+    return _has_include_keyword(event)
+
+
+AI_MODEL = "claude-haiku-4-5-20251001"
+
+AI_SYSTEM_PROMPT = (
+    "あなたは日本の百貨店で開催される催事（デパートイベント）の分類アシスタントです。"
+    "与えられる各催事について、食品・グルメ・物産展（食べ物や飲み物を主目的とする催事）"
+    "かどうかを判定してください。\n"
+    "食品催事の例: 物産展、うまいもの展、スイーツフェア、グルメ博、地方の食材フェア、"
+    "海外の食品フェア（例: 台湾フェア、イタリア展）。\n"
+    "食品催事ではない例: アニメ・漫画・ゲームの原画展やグッズ販売、キャラクターイベント、"
+    "ファッション・アパレル、宝飾品、アート・美術展、日用品・生活雑貨フェア、"
+    "スポーツ用品、単なる割引・キャンペーン告知。\n"
+    "各イベントの id をキーとして、食品催事なら true、そうでなければ false を値とする"
+    "JSONオブジェクトのみを出力してください。説明文やコードブロックの記号は一切含めないこと。"
+)
+
+
+def _ai_classify(events: list[Event]) -> dict[str, bool]:
+    """Claude APIでイベントが食品催事かどうかを一括判定する。
+    ANTHROPIC_API_KEY 未設定時やAPIエラー時は空dictを返し、
+    呼び出し側でキーワード判定へフォールバックさせる。"""
+    if not events:
+        return {}
+    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    if not api_key:
+        print("[ai_classify] ANTHROPIC_API_KEY未設定 — キーワード判定にフォールバック", flush=True)
+        return {}
+
+    try:
+        import anthropic
+    except ImportError:
+        print("[ai_classify] anthropicパッケージ未インストール — キーワード判定にフォールバック", flush=True)
+        return {}
+
+    try:
+        client = anthropic.Anthropic(api_key=api_key)
+        items = [
+            {"id": e.id, "store": e.store, "title": e.title, "floor": e.floor}
+            for e in events
+        ]
+        resp = client.messages.create(
+            model=AI_MODEL,
+            max_tokens=4096,
+            system=AI_SYSTEM_PROMPT,
+            messages=[{"role": "user", "content": json.dumps(items, ensure_ascii=False)}],
+        )
+        text = resp.content[0].text.strip()
+        text = re.sub(r'^```(?:json)?|```$', '', text, flags=re.MULTILINE).strip()
+        result = json.loads(text)
+        print(f"[ai_classify] {len(result)}件をAI判定", flush=True)
+        return {k: bool(v) for k, v in result.items()}
+    except Exception as e:
+        print(f"[ai_classify] ERROR: {e} — キーワード判定にフォールバック", flush=True)
+        return {}
 
 
 def _duration_days(event: Event) -> int:
@@ -139,11 +197,22 @@ def _normalize_title(title: str) -> str:
 
 
 def filter_events(events: list[Event]) -> list[Event]:
-    passed = [
+    # 開催日数・鮮度・フロアで先に絞り込み（無料・高速）
+    candidates = [
         e for e in events
-        if is_food_event(e) and _duration_days(e) >= MIN_EVENT_DAYS
+        if _duration_days(e) >= MIN_EVENT_DAYS
         and _is_recent(e) and _is_target_floor(e)
     ]
+
+    # 明白な非食品はキーワードで即除外（AI呼び出し数・料金を抑える）
+    survivors = [e for e in candidates if not _has_exclude_keyword(e)]
+
+    # 残りはAIに一括判定させる。AI利用不可時は旧INCLUDEキーワードにフォールバック
+    ai_results = _ai_classify(survivors)
+    if ai_results:
+        passed = [e for e in survivors if ai_results.get(e.id, False)]
+    else:
+        passed = [e for e in survivors if _has_include_keyword(e)]
 
     # ★タイトルを先に正規化（前置き句・年除去）してからデdup・マージする
     # これにより「イタリア展2026」と「イタリア展」が同一イベントとして統合される
