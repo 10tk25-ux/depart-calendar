@@ -10,6 +10,16 @@
     "category": ""
   },
   {
+    "id": "7f3f35aae186",
+    "store": "東武池袋",
+    "title": "大九州展",
+    "start": "2026-07-29",
+    "end": "2026-08-05",
+    "floor": "8F催事場",
+    "url": "https://www.tobu-dept.jp/ikebukuro/event/detail/8984",
+    "category": ""
+  },
+  {
     "id": "585a449735de",
     "store": "京王新宿",
     "title": "夏のKeioスイーツ博",
@@ -27,6 +37,16 @@
     "end": "2026-09-10",
     "floor": "7F大催事場",
     "url": "https://www.keionet.com/info/shinjuku/topics/000231.html",
+    "category": ""
+  },
+  {
+    "id": "d278b5da13e7",
+    "store": "日本橋三越",
+    "title": "匠の技展",
+    "start": "2026-07-22",
+    "end": "2026-08-04",
+    "floor": "日本橋三越本店 本館7階 催物会場",
+    "url": "https://www.bussanten.info/takumi-no-waza-2026-nihombashi/",
     "category": ""
   }
 ]
