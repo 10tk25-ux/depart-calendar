@@ -30,16 +30,6 @@
     "category": ""
   },
   {
-    "id": "585a449735de",
-    "store": "京王新宿",
-    "title": "夏のKeioスイーツ博",
-    "start": "2026-07-17",
-    "end": "2026-07-29",
-    "floor": "7F大催事場",
-    "url": "https://www.keionet.com/info/shinjuku/news/sweets-expo.html",
-    "category": ""
-  },
-  {
     "id": "2d3e8442f53c",
     "store": "京王新宿",
     "title": "大北海道展",
@@ -58,5 +48,15 @@
     "floor": "日本橋三越本店 本館7階 催物会場",
     "url": "https://www.bussanten.info/takumi-no-waza-2026-nihombashi/",
     "category": ""
+  },
+  {
+    "id": "0e96931f86ca",
+    "store": "新宿高島屋",
+    "title": "食料品お買得市",
+    "start": "2026-08-26",
+    "end": "2026-09-01",
+    "floor": "",
+    "url": "https://www.takashimaya.co.jp/shinjuku/topics/event.html",
+    "category": "食品"
   }
 ]
