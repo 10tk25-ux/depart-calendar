@@ -20,6 +20,16 @@
     "category": ""
   },
   {
+    "id": "b7d436ebf52a",
+    "store": "東武池袋",
+    "title": "滋賀・京都・福井・大阪展",
+    "start": "2026-08-13",
+    "end": "2026-08-19",
+    "floor": "8F催事場",
+    "url": "https://www.tobu-dept.jp/ikebukuro/event/detail/9016",
+    "category": ""
+  },
+  {
     "id": "2d3e8442f53c",
     "store": "京王新宿",
     "title": "大北海道展",
@@ -37,6 +47,16 @@
     "end": "2026-08-04",
     "floor": "日本橋三越本店 本館7階 催物会場",
     "url": "https://www.bussanten.info/takumi-no-waza-2026-nihombashi/",
+    "category": ""
+  },
+  {
+    "id": "a735a9a16707",
+    "store": "日本橋三越",
+    "title": "英国展",
+    "start": "2026-08-18",
+    "end": "2026-09-01",
+    "floor": "日本橋三越本店 本館7階 催物会場",
+    "url": "https://www.bussanten.info/eikokuten-2026-nihombashi-mitsukoshi/",
     "category": ""
   },
   {
