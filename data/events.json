@@ -1,25 +1,5 @@
 [
   {
-    "id": "c53edb511fc6",
-    "store": "東武池袋",
-    "title": "⼤沖縄展",
-    "start": "2026-08-06",
-    "end": "2026-08-12",
-    "floor": "8F催事場",
-    "url": "https://www.tobu-dept.jp/ikebukuro/event/detail/9024",
-    "category": ""
-  },
-  {
-    "id": "35394ffaae3c",
-    "store": "東武池袋",
-    "title": "大沖縄展",
-    "start": "2026-08-06",
-    "end": "2026-08-12",
-    "floor": "8F催事場",
-    "url": "https://www.tobu-dept.jp/ikebukuro/event/detail/9003",
-    "category": ""
-  },
-  {
     "id": "b7d436ebf52a",
     "store": "東武池袋",
     "title": "滋賀・京都・福井・大阪展",
@@ -40,16 +20,6 @@
     "category": ""
   },
   {
-    "id": "fdff5d372f75",
-    "store": "日本橋三越",
-    "title": "教科書のひみつ展",
-    "start": "2026-08-06",
-    "end": "2026-08-12",
-    "floor": "",
-    "url": "https://www.bussanten.info/kyokasho-no-himitsu-ten-2026/",
-    "category": ""
-  },
-  {
     "id": "d278b5da13e7",
     "store": "日本橋三越",
     "title": "匠の技展",
@@ -57,6 +27,16 @@
     "end": "2026-08-04",
     "floor": "日本橋三越本店 本館7階 催物会場",
     "url": "https://www.bussanten.info/takumi-no-waza-2026-nihombashi/",
+    "category": ""
+  },
+  {
+    "id": "fdff5d372f75",
+    "store": "日本橋三越",
+    "title": "教科書のひみつ展",
+    "start": "2026-08-06",
+    "end": "2026-08-12",
+    "floor": "",
+    "url": "https://www.bussanten.info/kyokasho-no-himitsu-ten-2026/",
     "category": ""
   },
   {
