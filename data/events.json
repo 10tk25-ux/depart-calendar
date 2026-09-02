@@ -8,5 +8,25 @@
     "floor": "7F大催事場",
     "url": "https://www.keionet.com/info/shinjuku/news/hokkaido_autumn.html",
     "category": ""
+  },
+  {
+    "id": "aa5f68e4e002",
+    "store": "新宿高島屋",
+    "title": "美味コレクション",
+    "start": "2026-09-10",
+    "end": "2026-09-24",
+    "floor": "",
+    "url": "https://www.takashimaya.co.jp/shinjuku/topics/event.html",
+    "category": "食品"
+  },
+  {
+    "id": "e67785ad6d8c",
+    "store": "新宿高島屋",
+    "title": "Fresh! Fun! HAWAI’I 2026",
+    "start": "2026-09-02",
+    "end": "2026-09-09",
+    "floor": "",
+    "url": "https://www.takashimaya.co.jp/shinjuku/topics/event.html",
+    "category": "食品"
   }
 ]
