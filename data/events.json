@@ -20,16 +20,6 @@
     "category": ""
   },
   {
-    "id": "9e9fbb069cd2",
-    "store": "新宿伊勢丹",
-    "title": "イタリア展",
-    "start": "2026-09-16",
-    "end": "2026-09-23",
-    "floor": "伊勢丹新宿店 本館6階 催物場",
-    "url": "https://www.bussanten.info/italia-2026-isetan-shinjuku/",
-    "category": ""
-  },
-  {
     "id": "4b501f3e2189",
     "store": "日本橋三越",
     "title": "フランス展",
@@ -47,6 +37,16 @@
     "end": "2026-09-16",
     "floor": "",
     "url": "https://www.bussanten.info/okamoto-taro-and-artists-2026-nihombashi-mitsukoshi/",
+    "category": ""
+  },
+  {
+    "id": "9e9fbb069cd2",
+    "store": "新宿伊勢丹",
+    "title": "イタリア展",
+    "start": "2026-09-16",
+    "end": "2026-09-23",
+    "floor": "伊勢丹新宿店 本館6階 催物場",
+    "url": "https://www.bussanten.info/italia-2026-isetan-shinjuku/",
     "category": ""
   },
   {
