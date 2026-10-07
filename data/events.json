@@ -1,15 +1,5 @@
 [
   {
-    "id": "f3b38ee3a8c0",
-    "store": "東武池袋",
-    "title": "日本画展",
-    "start": "2026-10-08",
-    "end": "2026-10-14",
-    "floor": "8F催事場",
-    "url": "https://www.tobu-dept.jp/ikebukuro/event/detail/9229",
-    "category": ""
-  },
-  {
     "id": "77effd935a88",
     "store": "東武池袋",
     "title": "四国4県 味めぐり",
@@ -17,26 +7,6 @@
     "end": "2026-10-14",
     "floor": "8F催事場",
     "url": "https://www.tobu-dept.jp/ikebukuro/event/detail/9186",
-    "category": ""
-  },
-  {
-    "id": "332558bdd4ea",
-    "store": "東武池袋",
-    "title": "昭和平成レトロな世界展",
-    "start": "2026-10-08",
-    "end": "2026-10-14",
-    "floor": "8F催事場",
-    "url": "https://www.tobu-dept.jp/ikebukuro/event/detail/9185",
-    "category": ""
-  },
-  {
-    "id": "4cf466aea237",
-    "store": "東武池袋",
-    "title": "HELLO KITTY'S SWEETS MARKET",
-    "start": "2026-10-22",
-    "end": "2026-11-04",
-    "floor": "8F催事場",
-    "url": "https://www.tobu-dept.jp/ikebukuro/event/detail/9136",
     "category": ""
   },
   {
@@ -48,16 +18,6 @@
     "floor": "7F大催事場",
     "url": "https://www.keionet.com/info/shinjuku/topics/000231.html",
     "category": ""
-  },
-  {
-    "id": "bbe45144040c",
-    "store": "新宿高島屋",
-    "title": "クリスマスキーき・オードブル",
-    "start": "2026-10-14",
-    "end": "2026-12-14",
-    "floor": "",
-    "url": "https://www.takashimaya.co.jp/shinjuku/topics/event.html",
-    "category": "食品"
   },
   {
     "id": "901a35bc44cc",
