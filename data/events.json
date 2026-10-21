@@ -1,45 +1,5 @@
 [
   {
-    "id": "dab34d793c77",
-    "store": "東武池袋",
-    "title": "山形・宮城展",
-    "start": "2026-10-22",
-    "end": "2026-10-28",
-    "floor": "8F催事場",
-    "url": "https://www.tobu-dept.jp/ikebukuro/event/detail/9233",
-    "category": ""
-  },
-  {
-    "id": "d9a627c0d48a",
-    "store": "京王新宿",
-    "title": "大東北展",
-    "start": "2026-10-29",
-    "end": "2026-11-04",
-    "floor": "7F大催事場",
-    "url": "https://www.keionet.com/info/shinjuku/topics/000231.html",
-    "category": ""
-  },
-  {
-    "id": "647420c1c771",
-    "store": "京王新宿",
-    "title": "物産展",
-    "start": "2026-11-12",
-    "end": "2026-11-18",
-    "floor": "7F大催事場",
-    "url": "https://www.keionet.com/info/shinjuku/topics/000231.html",
-    "category": ""
-  },
-  {
-    "id": "c10939eae042",
-    "store": "京王新宿",
-    "title": "台湾フェア",
-    "start": "2026-11-19",
-    "end": "2026-11-25",
-    "floor": "7F大催事場",
-    "url": "https://www.keionet.com/info/shinjuku/topics/000231.html",
-    "category": ""
-  },
-  {
     "id": "7dffb2e65188",
     "store": "日本橋三越",
     "title": "大中央区展",
@@ -58,25 +18,5 @@
     "floor": "新宿高島屋 11階 催会場",
     "url": "https://www.bussanten.info/autumn-hokkaido-fair-shinjuku-2026/",
     "category": ""
-  },
-  {
-    "id": "901a35bc44cc",
-    "store": "新宿高島屋",
-    "title": "大北海道展",
-    "start": "2026-10-21",
-    "end": "2026-11-04",
-    "floor": "",
-    "url": "https://www.takashimaya.co.jp/shinjuku/topics/event.html",
-    "category": "食品"
-  },
-  {
-    "id": "38158c1af981",
-    "store": "日本橋三越",
-    "title": "味と匠の大中央区展",
-    "start": "2026-10-21",
-    "end": "2026-10-27",
-    "floor": "",
-    "url": "https://www.mistore.jp/store/nihombashi/event_calendar.html",
-    "category": "食品"
   }
 ]
