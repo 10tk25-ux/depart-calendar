@@ -18,5 +18,25 @@
     "floor": "新宿高島屋 11階 催会場",
     "url": "https://www.bussanten.info/autumn-hokkaido-fair-shinjuku-2026/",
     "category": ""
+  },
+  {
+    "id": "901a35bc44cc",
+    "store": "新宿高島屋",
+    "title": "大北海道展",
+    "start": "2026-10-21",
+    "end": "2026-11-04",
+    "floor": "",
+    "url": "https://www.takashimaya.co.jp/shinjuku/topics/event.html",
+    "category": "食品"
+  },
+  {
+    "id": "38158c1af981",
+    "store": "日本橋三越",
+    "title": "味と匠の大中央区展",
+    "start": "2026-10-21",
+    "end": "2026-10-27",
+    "floor": "",
+    "url": "https://www.mistore.jp/store/nihombashi/event_calendar.html",
+    "category": "食品"
   }
 ]
