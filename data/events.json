@@ -1,15 +1,5 @@
 [
   {
-    "id": "d9a627c0d48a",
-    "store": "京王新宿",
-    "title": "大東北展",
-    "start": "2026-10-29",
-    "end": "2026-11-04",
-    "floor": "7F大催事場",
-    "url": "https://www.keionet.com/info/shinjuku/news/tohoku.html",
-    "category": ""
-  },
-  {
     "id": "647420c1c771",
     "store": "京王新宿",
     "title": "物産展",
@@ -26,28 +16,8 @@
     "start": "2026-11-19",
     "end": "2026-11-25",
     "floor": "7F大催事場",
-    "url": "https://www.keionet.com/info/shinjuku/topics/000231.html",
+    "url": "https://www.keionet.com/info/shinjuku/news/taiwan-fair.html",
     "category": ""
-  },
-  {
-    "id": "1ff3ee4ff6a8",
-    "store": "新宿高島屋",
-    "title": "秋の大北海道展",
-    "start": "2026-10-28",
-    "end": "2026-11-04",
-    "floor": "新宿高島屋 11階 催会場",
-    "url": "https://www.bussanten.info/autumn-hokkaido-fair-shinjuku-2026/",
-    "category": ""
-  },
-  {
-    "id": "901a35bc44cc",
-    "store": "新宿高島屋",
-    "title": "大北海道展",
-    "start": "2026-10-21",
-    "end": "2026-11-04",
-    "floor": "",
-    "url": "https://www.takashimaya.co.jp/shinjuku/topics/event.html",
-    "category": "食品"
   },
   {
     "id": "6600afcd770c",
