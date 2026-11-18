@@ -7,12 +7,15 @@ from scrapers.filter import filter_events
 
 OUTPUT_PATH = Path(__file__).parent / "data" / "events.json"
 
+# Tobu official site times out from GitHub Actions (since 2026-10); fall back to departevent.net when it returns 0 events
+def scrape_tobu(): return tobu.scrape() or departevent.scrape_tobu()
+
 
 def run():
     all_events = []
 
     scrapers = [
-        ("東武池袋",  tobu.scrape),
+        ("東武池袋",  scrape_tobu),
         ("京王新宿",  keio.scrape),
         # bussanten.info: 伊勢丹新宿・日本橋三越・新宿高島屋の催事場イベントを取得
         ("bussanten", bussanten.scrape),
