@@ -21,6 +21,7 @@ STORE_MAP = {
     "日本橋三越本店": "日本橋三越",
     "伊勢丹新宿店": "新宿伊勢丹",
     "新宿伊勢丹": "新宿伊勢丹",
+    "東武百貨店池袋店": "東武池袋",
 }
 
 # 催事サイトの公式URL（代替ソース使用時のリンク先）
@@ -28,6 +29,7 @@ STORE_URLS = {
     "新宿高島屋": "https://www.takashimaya.co.jp/shinjuku/topics/event.html",
     "新宿伊勢丹": "https://www.mistore.jp/store/shinjuku/event_calendar.html",
     "日本橋三越": "https://www.mistore.jp/store/nihombashi/event_calendar.html",
+    "東武池袋": "https://www.tobu-dept.jp/ikebukuro/event/",
 }
 
 DATE_RANGE_RE = re.compile(
@@ -137,7 +139,7 @@ def _scrape_page(url: str, target_stores: set[str]) -> list[Event]:
                         start=start,
                         end=end,
                         url=STORE_URLS.get(current_store, ""),
-                        floor="",
+                        floor="8F催事場" if current_store == "東武池袋" else "",
                         category="食品",
                     ))
 
@@ -159,3 +161,6 @@ def scrape_isetan() -> list[Event]:
 
 def scrape_mitsukoshi() -> list[Event]:
     return _scrape_page(BUSSAN_URL, {"日本橋三越"})
+
+
+def scrape_tobu() -> list[Event]: return _scrape_page(BUSSAN_URL, {"東武池袋"})
